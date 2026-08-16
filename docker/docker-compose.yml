@@ -22,6 +22,8 @@ services:
       MYSQL_DATABASE: intern_kadai_dev
     ports:
       - "3306:3306"
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d
     networks:
       - fuelphp-network
 
