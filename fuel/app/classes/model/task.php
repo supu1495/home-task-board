@@ -18,4 +18,7 @@ class Task{
         $query->where('task.id', $id);
         return $query->execute()->current();
     }
+    public static function create($values){
+        return \DB::insert('task')->set($values)->execute();
+    }
 }

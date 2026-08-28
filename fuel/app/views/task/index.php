@@ -23,7 +23,40 @@
             <?php endforeach; ?>
         </div>
     </div>
-    <div class="pane">
-        登録フォーム（準備中）
+    <div class="pane form">
+        <form action="<?php echo Uri::create('task/create'); ?>" method="post">
+            <div class="pane-h">
+                <span>＋ 新規タスク登録 <span class="modebadge">新規</span></span>
+            </div>
+
+            <div class="field">
+                <label class="lbl">タイトル</label>
+                <input class="inp" type="text" name="title" placeholder="例）週末の買い出し">
+            </div>
+            <div class="field row2">
+                <div>
+                    <label class="lbl">開始日</label>
+                    <input class="inp" type="date" name="start_date">
+                </div>
+                <div>
+                    <label class="lbl">締切</label>
+                    <input class="inp" type="date" name="deadline">
+                </div>
+            </div>
+            <div class="field">
+                <label class="lbl">タグ（種別）</label>
+                <select class="inp" name="tag_id">
+                    <option value="">タグなし</option>
+                    <?php foreach ($tags as $tag): ?>
+                        <option value="<?php echo $tag['id']; ?>"><?php echo $tag['name']; ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="field">
+                <label class="lbl">メモ</label>
+                <input class="inp" type="text" name="memo" placeholder="補足を入力...">
+            </div>
+            <button class="submit" type="submit">登録する</button>
+        </form>
     </div>
 </div>
