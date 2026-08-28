@@ -26,4 +26,21 @@ class Controller_Task extends Controller_Template{
 
         $this->template->content = View::forge('task/index', array('tasks' => $tasks, 'tags' => $tags));
     }
+    public function action_create(){
+        $values = array(
+            'title' => Input::post('title'),
+            'start_date' => Input::post('start_date'),
+            'deadline' => Input::post('deadline'),
+            'tag_id' => Input::post('tag_id'),
+            'memo' => Input::post('memo'),
+        );
+
+        foreach (array('start_date', 'deadline', 'tag_id', 'memo') as $column){
+            if ($values[$column] === ''){
+                    $values[$column] = null;
+            }
+        }
+        \Model\Task::create($values);
+        Response::redirect('task/index');
+    }
 }
