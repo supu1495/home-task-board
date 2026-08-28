@@ -5,14 +5,14 @@
         </div>
         <div class="board"><!-- カードを並べる箱 -->
             <?php foreach ($tasks as $task): ?>
-                <div class="task" style="border-left-color: <?php echo $task['tag_color']; ?>">
+                <div class="task<?php echo $task['done'] ? ' done' : ''; ?>" style="border-left-color: <?php echo $task['tag_color']; ?>">
                     <div class="t-top">
                         <div class="check"></div>
                         <div class="t-body">
                             <div class="t-titlerow">
                                 <span class="t-title"><?php echo $task['title']; ?></span>
                                 <span class="tag" style="background: <?php echo $task['tag_color']; ?>"><?php echo $task['tag_name']; ?></span>
-                                <span class="due">締切<?php echo $task['deadline']; ?></span>
+                                <span class="due<?php echo $task['soon'] ? ' soon' : ''; ?>"> 締切<?php echo $task['deadline']; ?></span>
                             </div>
                             <?php if ($task['memo'] !== '') : ?>
                                 <div class="t-memo">📝 <?php echo $task['memo']; ?></div>
