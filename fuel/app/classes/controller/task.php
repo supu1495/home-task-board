@@ -81,6 +81,12 @@ class Controller_Task extends Controller_Template{
         Response::redirect('task/index');
     }
 
+    public function action_delete(){
+        $id = Input::post('id');
+        \Model\Task::delete($id);
+        Response::redirect('task/index');
+    }
+
     private function format_tasks($tasks){
         $limit = date('Y-m-d', strtotime('+3 days'));
 

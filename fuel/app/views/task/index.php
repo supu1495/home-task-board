@@ -14,6 +14,10 @@
                                 <span class="tag" style="background: <?php echo $task['tag_color']; ?>"><?php echo $task['tag_name']; ?></span>
                                 <span class="due<?php echo $task['soon'] ? ' soon' : ''; ?>"> 締切<?php echo $task['deadline']; ?></span>
                                 <a class="reset" href="<?php echo Uri::create('task/edit/'.$task['id']); ?>">編集</a>
+                                <form action="<?php echo Uri::create('task/delete'); ?>" method="post">
+                                    <input type="hidden" name="id" value="<?php echo $task['id']; ?>">
+                                    <button type="submit">🗑</button>
+                                </form>
                             </div>
                             <?php if ($task['memo'] !== '') : ?>
                                 <div class="t-memo">📝 <?php echo $task['memo']; ?></div>
