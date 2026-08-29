@@ -2,17 +2,8 @@
 class Controller_Task extends Controller_Template{
     public function action_index(){
         $tasks = \Model\Task::find_all();
+        $tasks = $this->format_tasks($tasks);
         $tags = \Model\Tag::find_all();
-
-        $limit = date('Y-m-d', strtotime('+3 days'));
-
-        $defaults = array(
-            'memo' => '',
-            'start_date' => '',
-            'deadline' => '未設定',
-            'tag_name' => '',
-            'tag_color' => '',
-        );
 
         $form = array(
             'id' => '',
@@ -23,37 +14,18 @@ class Controller_Task extends Controller_Template{
             'memo' => ''
         );
 
-        foreach ($tasks as $key => $task){
-            $tasks[$key]['soon'] = ($task['deadline'] !== NULL && $task['deadline'] <= $limit);
-
-            foreach ($defaults as $column => $default){
-                if ($task[$column] === null){
-                    $tasks[$key][$column] = $default;
-                }
-            }
-        }
-
         $this->template->content = View::forge('task/index', array('tasks' => $tasks, 'tags' => $tags, 'form' => $form));
     }
 
     public function action_edit($id){
         $tasks = \Model\Task::find_all();
+        $tasks = $this->format_tasks($tasks);
         $tags = \Model\Tag::find_all();
         $task = \Model\Task::find_by_id($id);
-
-        $limit = date('Y-m-d', strtotime('+3 days'));
 
         if ( ! $task){
             Response::redirect('task/index');
         }
-
-        $defaults = array(
-            'memo' => '',
-            'start_date' => '',
-            'deadline' => '未設定',
-            'tag_name' => '',
-            'tag_color' => '',
-        );
         
         $form = array(
             'id' => $task['id'],
@@ -63,14 +35,6 @@ class Controller_Task extends Controller_Template{
             'tag_id' => $task['tag_id'],
             'memo' => $task['memo'],
         );
-        foreach ($tasks as $key => $row){
-            $tasks[$key]['soon'] = ($row['deadline'] !== NULL && $row['deadline'] <= $limit);
-            foreach ($defaults as $column => $default){
-                if ($row[$column] === null){
-                    $tasks[$key][$column] = $default;
-                }
-            }
-        }
 
         foreach ($form as $column => $value){
             if ($form[$column] === null){
@@ -115,5 +79,26 @@ class Controller_Task extends Controller_Template{
         }
         \Model\Task::update($id, $values);
         Response::redirect('task/index');
+    }
+
+    private function format_tasks($tasks){
+        $limit = date('Y-m-d', strtotime('+3 days'));
+
+        $defaults = array(
+            'memo' => '',
+            'start_date' => '',
+            'deadline' => '未設定',
+            'tag_name' => '',
+            'tag_color' => '',
+        );
+        foreach ($tasks as $key => $row){
+            $tasks[$key]['soon'] = ($row['deadline'] !== NULL && $row['deadline'] <= $limit);
+            foreach ($defaults as $column => $default){
+                if ($row[$column] === null){
+                    $tasks[$key][$column] = $default;
+                }
+            }
+        }
+        return $tasks;
     }
 }
