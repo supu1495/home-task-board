@@ -26,7 +26,10 @@
                                 <div class="subs">
                                     <?php foreach ($task['subtasks'] as $subtask): ?>
                                         <div class="subrow<?php echo $subtask['done'] ? ' done' : ''; ?>">
-                                            <div class="check"></div>
+                                            <form action="<?php echo Uri::create('task/subtask_toggle'); ?>" method="post">
+                                                <input type="hidden" name="id" value="<?php echo $subtask['id']; ?>">
+                                                <button class="check" type="submit"><?php echo $subtask['done'] ? '✓' : ''; ?></button>
+                                            </form>
                                             <span><?php echo $subtask['title'] ?></span>
                                         </div>
                                     <?php endforeach; ?>

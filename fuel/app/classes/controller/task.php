@@ -99,6 +99,12 @@ class Controller_Task extends Controller_Template{
         Response::redirect('task/edit/'.$task_id);
     }
 
+    public function action_subtask_toggle(){
+        $id = Input::post('id');
+        \Model\SubTask::toggle_done($id);
+        Response::redirect('task/index');
+    }
+
     private function attach_subtasks($tasks){
         $ids = array_column($tasks, 'id');
         $subtasks = \Model\SubTask::find_by_task_ids($ids);
