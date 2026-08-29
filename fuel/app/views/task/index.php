@@ -82,5 +82,15 @@
             </div>
             <button class="submit" type="submit"><?php echo $is_edit ? '更新する' : '登録する'; ?></button>
         </form>
+        <?php if ($is_edit): ?>
+            <form action="<?php echo Uri::create('task/subtask_create'); ?>" method="post">
+                <input type="hidden" name="task_id" value="<?php echo $form['id']; ?>">
+                <div class="field">
+                    <label class="lbl">サブタスクを追加</label>
+                    <input class="inp" type="text" name="title" placeholder="例）牛乳">
+                </div>
+                <button class="submit" type="submit">＋ 追加する</button>
+            </form>
+        <?php endif; ?>
     </div>
 </div>

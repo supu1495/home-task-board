@@ -13,4 +13,15 @@ class SubTask{
         $query->order_by('sub_task.id', 'asc');
         return $query->execute()->as_array();
     }
+    
+    public static function create($values){
+        return \DB::insert('sub_task')->set($values)->execute();
+    }
+
+    public static function toggle_done($id){
+        return \DB::update('sub_task')->set(array('done' => \DB::expr('1 - done')))->where('id', $id)->where('deleted_at', null)->execute();
+    }
+    public static function delete($id){
+        return \DB::update('sub_task')->set(array('deleted_at' => \DB::expr('NOW()')))->where('id', $id)->where('deleted_at', null)->execute();
+    }
 }

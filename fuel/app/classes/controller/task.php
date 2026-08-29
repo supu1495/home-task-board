@@ -89,6 +89,16 @@ class Controller_Task extends Controller_Template{
         Response::redirect('task/index');
     }
 
+    public function action_subtask_create(){
+        $task_id = Input::post('task_id');
+        $values = array(
+            'task_id' => $task_id,
+            'title' => Input::post('title'),
+        );
+        \Model\SubTask::create($values);
+        Response::redirect('task/edit/'.$task_id);
+    }
+
     private function attach_subtasks($tasks){
         $ids = array_column($tasks, 'id');
         $subtasks = \Model\SubTask::find_by_task_ids($ids);
