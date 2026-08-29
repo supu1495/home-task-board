@@ -43,6 +43,7 @@ class Controller_Task extends Controller_Template{
                 $form[$column] = '';
             }
         }
+        $form['subtasks'] = \Model\SubTask::find_by_task_ids(array($id));
         $this->template->content = View::forge('task/index', array('tasks' => $tasks, 'tags' => $tags, 'form' => $form));
     }
 
@@ -103,6 +104,13 @@ class Controller_Task extends Controller_Template{
         $id = Input::post('id');
         \Model\SubTask::toggle_done($id);
         Response::redirect('task/index');
+    }
+
+    public function action_subtask_delete(){
+        $id = Input::post('id');
+        $task_id = Input::post('task_id');
+        \Model\SubTask::delete($id);
+        Response::redirect('task/edit/'.$task_id);
     }
 
     private function attach_subtasks($tasks){

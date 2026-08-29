@@ -86,6 +86,15 @@
             <button class="submit" type="submit"><?php echo $is_edit ? '更新する' : '登録する'; ?></button>
         </form>
         <?php if ($is_edit): ?>
+            <div class="pane-h">サブタスク</div>
+                <?php foreach ($form['subtasks'] as $subtask): ?>
+                    <form action="<?php echo Uri::create('task/subtask_delete'); ?>" method="post">
+                        <input type="hidden" name="id" value="<?php echo $subtask['id']; ?>">
+                        <input type="hidden" name="task_id" value="<?php echo $form['id'] ?>">
+                        <span><?php echo $subtask['title'] ?></span>
+                        <button type="submit">🗑</button>
+                    </form>
+                <?php endforeach; ?>
             <form action="<?php echo Uri::create('task/subtask_create'); ?>" method="post">
                 <input type="hidden" name="task_id" value="<?php echo $form['id']; ?>">
                 <div class="field">
