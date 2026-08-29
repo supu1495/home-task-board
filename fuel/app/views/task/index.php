@@ -22,6 +22,16 @@
                             <?php if ($task['memo'] !== '') : ?>
                                 <div class="t-memo">📝 <?php echo $task['memo']; ?></div>
                             <?php endif; ?>
+                            <?php if ($task['total_count'] > 0): ?>
+                                <div class="subs">
+                                    <?php foreach ($task['subtasks'] as $subtask): ?>
+                                        <div class="subrow<?php echo $subtask['done'] ? ' done' : ''; ?>">
+                                            <div class="check"></div>
+                                            <span><?php echo $subtask['title'] ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
