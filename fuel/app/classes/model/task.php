@@ -24,4 +24,7 @@ class Task{
     public static function update($id, $values){
         return \DB::update('task')->set($values)->where('id', $id)->execute();
     }
+    public static function delete($id){
+        return \DB::update('task')->set(array('deleted_at' => \DB::expr('NOW()')))->where('id', $id)->where('deleted_at', null)->execute();
+    }
 }
