@@ -2,6 +2,7 @@
 class Controller_Task extends Controller_Template{
     public function action_index(){
         $tasks = \Model\Task::find_all();
+        $tasks = $this->attach_subtasks($tasks);
         $tasks = $this->format_tasks($tasks);
         $tags = \Model\Tag::find_all();
 
@@ -19,6 +20,7 @@ class Controller_Task extends Controller_Template{
 
     public function action_edit($id){
         $tasks = \Model\Task::find_all();
+        $tasks = $this->attach_subtasks($tasks);
         $tasks = $this->format_tasks($tasks);
         $tags = \Model\Tag::find_all();
         $task = \Model\Task::find_by_id($id);
@@ -85,6 +87,24 @@ class Controller_Task extends Controller_Template{
         $id = Input::post('id');
         \Model\Task::delete($id);
         Response::redirect('task/index');
+    }
+
+    private function attach_subtasks($tasks){
+        $ids = array_column($tasks, 'id');
+        $subtasks = \Model\SubTask::find_by_task_ids($ids);
+
+        $grouped = array();
+        foreach ($subtasks as $subtask){
+            $grouped[$subtask['task_id']][] = $subtask;
+        }
+        foreach ($tasks as $key => $task){
+            $rows = isset($grouped[$task['id']]) ? $grouped[$task['id']] : array();
+
+            $tasks[$key]['subtasks'] = $rows;
+            $tasks[$key]['total_count'] = count($rows);
+            $tasks[$key]['done_count'] = array_sum(array_column($rows, 'done'));
+        }
+        return $tasks;
     }
 
     private function format_tasks($tasks){
