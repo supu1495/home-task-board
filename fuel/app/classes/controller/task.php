@@ -146,6 +146,7 @@ class Controller_Task extends Controller_Template{
         );
         foreach ($tasks as $key => $row){
             $tasks[$key]['soon'] = ($row['deadline'] !== NULL && $row['deadline'] <= $limit);
+            $tasks[$key]['percent'] = $row['total_count'] ? round(($row['done_count']/$row['total_count'])*100) : 0;
             foreach ($defaults as $column => $default){
                 if ($row[$column] === null){
                     $tasks[$key][$column] = $default;
