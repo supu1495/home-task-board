@@ -1,48 +1,45 @@
+<script>
+  var initialTasks = <?php echo $tasks_json; ?>;
+</script>
 <div class="grid">
     <div class="pane"><!-- 左の箱 -->
         <div class="pane-h"><!-- タスク一覧 -->
             タスク一覧(<?php echo count($tasks); ?>件)
         </div>
-        <div class="board"><!-- カードを並べる箱 -->
-            <?php foreach ($tasks as $task): ?>
-                <div class="task<?php echo $task['done'] ? ' done' : ''; ?>" style="border-left-color: <?php echo $task['tag_color']; ?>">
+        <div class="board" id="board"><!-- カードを並べる箱 -->
+            <div data-bind="foreach: tasks">
+                <div class="task" data-bind="css: { done: done }, style: { borderLeftColor: tag_color }">
                     <div class="t-top">
                         <div class="check"></div>
                         <div class="t-body">
                             <div class="t-titlerow">
-                                <span class="t-title"><?php echo $task['title']; ?></span>
-                                <span class="tag" style="background: <?php echo $task['tag_color']; ?>"><?php echo $task['tag_name']; ?></span>
-                                <span class="due<?php echo $task['soon'] ? ' soon' : ''; ?>"> 締切<?php echo $task['deadline']; ?></span>
-                                <a class="reset" href="<?php echo Uri::create('task/edit/'.$task['id']); ?>">編集</a>
+                                <span class="t-title" data-bind="text: title"></span>
+                                <span class="tag" data-bind="text: tag_name, style: { background: tag_color }"></span>
+                                <span class="due" data-bind="text: '締切' + deadline, css: { soon: soon }"></span>
+                                <a class="reset" data-bind="attr: { href: '<?php echo Uri::create('task/edit'); ?>/' + id }">編集</a>
                                 <form action="<?php echo Uri::create('task/delete'); ?>" method="post">
-                                    <input type="hidden" name="id" value="<?php echo $task['id']; ?>">
+                                    <input type="hidden" name="id" data-bind="attr: { value: id }">
                                     <button type="submit">🗑</button>
                                 </form>
                             </div>
-                            <?php if ($task['memo'] !== '') : ?>
-                                <div class="t-memo">📝 <?php echo $task['memo']; ?></div>
-                            <?php endif; ?>
-                            <?php if ($task['total_count'] > 0): ?>
-                                <div class="prog">
-                                    <div class="bar"><span style="width: <?php echo $task['percent']; ?>%; background: <?php echo $task['tag_color']; ?>"></span></div>
-                                    <span class="pcount"><?php echo $task['done_count']; ?> / <?php echo $task['total_count']; ?></span>
+                            <div class="t-memo" data-bind="visible: memo, text: '📝 ' + memo"></div>
+                            <div class="prog" data-bind="visible: total_count > 0">
+                                <div class="bar"><span data-bind="style: { width: percent + '%', background: tag_color }"></span></div>
+                                <span class="pcount" data-bind="text: done_count + ' / ' + total_count"></span>
+                            </div>
+                            <div class="subs" data-bind="foreach: subtasks">
+                                <div class="subrow" data-bind="css: { done: done }">
+                                    <form action="<?php echo Uri::create('task/subtask_toggle'); ?>" method="post">
+                                        <input type="hidden" name="id" data-bind="attr: { value: id }">
+                                        <button class="check" type="submit" data-bind="text: done ? '✓' : ''"></button>
+                                    </form>
+                                    <span data-bind="text: title"></span>
                                 </div>
-                                <div class="subs">
-                                    <?php foreach ($task['subtasks'] as $subtask): ?>
-                                        <div class="subrow<?php echo $subtask['done'] ? ' done' : ''; ?>">
-                                            <form action="<?php echo Uri::create('task/subtask_toggle'); ?>" method="post">
-                                                <input type="hidden" name="id" value="<?php echo $subtask['id']; ?>">
-                                                <button class="check" type="submit"><?php echo $subtask['done'] ? '✓' : ''; ?></button>
-                                            </form>
-                                            <span><?php echo $subtask['title'] ?></span>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
-            <?php endforeach; ?>
+            </div>
         </div>
     </div>
     <div class="pane form">

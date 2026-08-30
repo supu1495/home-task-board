@@ -14,8 +14,9 @@ class Controller_Task extends Controller_Template{
             'tag_id' => '',
             'memo' => ''
         );
-
-        $this->template->content = View::forge('task/index', array('tasks' => $tasks, 'tags' => $tags, 'form' => $form));
+        $view = View::forge('task/index', array('tasks' => $tasks, 'tags' => $tags, 'form' => $form));
+        $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
+        $this->template->content = $view;
     }
 
     public function action_edit($id){
@@ -44,7 +45,9 @@ class Controller_Task extends Controller_Template{
             }
         }
         $form['subtasks'] = \Model\SubTask::find_by_task_ids(array($id));
-        $this->template->content = View::forge('task/index', array('tasks' => $tasks, 'tags' => $tags, 'form' => $form));
+        $view = View::forge('task/index', array('tasks' => $tasks, 'tags' => $tags, 'form' => $form));
+        $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
+        $this->template->content = $view;
     }
 
     public function action_create(){
@@ -126,7 +129,13 @@ class Controller_Task extends Controller_Template{
         }
         foreach ($tasks as $key => $task){
             $rows = isset($grouped[$task['id']]) ? $grouped[$task['id']] : array();
-            $count = isset($counts[$task['id']]) ? $counts[$task['id']] : null;            
+            $count = isset($counts[$task['id']]) ? $counts[$task['id']] : null;
+            foreach ($rows as $i => $subtask){
+                $rows[$i]['id'] = (int) $subtask['id'];
+                $rows[$i]['done'] = (int) $subtask['done'];
+            }
+            $tasks[$key]['id'] = (int) $task['id'];
+            $tasks[$key]['done'] = (int) $task['done'];
             $tasks[$key]['subtasks'] = $rows;
             $tasks[$key]['total_count'] = $count ? (int)$count['total_count'] : 0;
             $tasks[$key]['done_count'] = $count ? (int)$count['done_count'] : 0;

@@ -13,5 +13,7 @@
             </div>
             <?php echo $content; ?>
         </div>
+        <?php echo Asset::js('knockout-3.5.1.js'); ?>
+        <?php echo Asset::js('board.js'); ?>
     </body>
  </html>
