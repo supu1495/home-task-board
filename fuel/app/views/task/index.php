@@ -23,6 +23,10 @@
                                 <div class="t-memo">📝 <?php echo $task['memo']; ?></div>
                             <?php endif; ?>
                             <?php if ($task['total_count'] > 0): ?>
+                                <div class="prog">
+                                    <div class="bar"><span style="width: <?php echo $task['percent']; ?>%; background: <?php echo $task['tag_color']; ?>"></span></div>
+                                    <span class="pcount"><?php echo $task['done_count']; ?> / <?php echo $task['total_count']; ?></span>
+                                </div>
                                 <div class="subs">
                                     <?php foreach ($task['subtasks'] as $subtask): ?>
                                         <div class="subrow<?php echo $subtask['done'] ? ' done' : ''; ?>">
