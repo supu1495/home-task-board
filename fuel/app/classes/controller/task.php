@@ -116,17 +116,20 @@ class Controller_Task extends Controller_Template{
     private function attach_subtasks($tasks){
         $ids = array_column($tasks, 'id');
         $subtasks = \Model\SubTask::find_by_task_ids($ids);
-
+        $counts = array();
+        foreach (\Model\SubTask::count_by_task_ids($ids) as $row){
+            $counts[$row['task_id']] = $row;
+        }
         $grouped = array();
         foreach ($subtasks as $subtask){
             $grouped[$subtask['task_id']][] = $subtask;
         }
         foreach ($tasks as $key => $task){
             $rows = isset($grouped[$task['id']]) ? $grouped[$task['id']] : array();
-
+            $count = isset($counts[$task['id']]) ? $counts[$task['id']] : null;            
             $tasks[$key]['subtasks'] = $rows;
-            $tasks[$key]['total_count'] = count($rows);
-            $tasks[$key]['done_count'] = array_sum(array_column($rows, 'done'));
+            $tasks[$key]['total_count'] = $count ? (int)$count['total_count'] : 0;
+            $tasks[$key]['done_count'] = $count ? (int)$count['done_count'] : 0;
         }
         return $tasks;
     }
