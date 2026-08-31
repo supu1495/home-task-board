@@ -3,13 +3,14 @@ function TaskBoard(tasks, tags){
 
     self.tasks = ko.observableArray(tasks.map(function(task){ return new Task(task); }));
     self.tags = ko.observableArray(tags.map(function(tag){ return new Tag(tag); }));
-    self.selectedTagId = ko.observable(null);
+    var savedTagId = tags.some(function(tag){ return tag.id === initialFilterTagId; }) ? initialFilterTagId : null;
+    self.selectedTagId = ko.observable(savedTagId);
     self.isTagModalOpen = ko.observable(false);
     self.newTagName = ko.observable('');
     self.newTagColor = ko.observable('#4f6bed');
 
-    self.selectTag = function(tag){ self.selectedTagId(tag.id); };
-    self.selectAll = function(){ self.selectedTagId(null); };
+    self.selectTag = function(tag){ self.selectedTagId(tag.id); saveFilter(tag.id); };
+    self.selectAll = function(){ self.selectedTagId(null); saveFilter(null); };
 
     self.filteredTasks = ko.computed(function(){
         var id = self.selectedTagId();
@@ -23,6 +24,11 @@ function TaskBoard(tasks, tags){
                 if ( ! res.ok){ throw new Error('request failed'); }
                 return res.json();
             });
+    };
+
+    var saveFilter = function(tagId){
+        post(endpoints.filter, { tag_id: tagId === null ? '' : tagId })
+            .catch(function(e){ console.error(e); });
     };
 
     var applyState = function(state){
