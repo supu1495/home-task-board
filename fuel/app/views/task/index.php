@@ -27,9 +27,9 @@
                                 </form>
                             </div>
                             <div class="t-memo" data-bind="visible: memo, text: '📝 ' + memo"></div>
-                            <div class="prog" data-bind="visible: total_count > 0">
-                                <div class="bar"><span data-bind="style: { width: percent + '%', background: tag_color }"></span></div>
-                                <span class="pcount" data-bind="text: done_count + ' / ' + total_count"></span>
+                            <div class="prog" data-bind="visible: total_count() > 0">
+                                <div class="bar"><span data-bind="style: { width: percent() + '%', background: tag_color }"></span></div>
+                                <span class="pcount" data-bind="text: done_count() + ' / ' + total_count()"></span>
                             </div>
                             <div class="subs" data-bind="foreach: subtasks">
                                 <div class="subrow" data-bind="css: { done: done }">

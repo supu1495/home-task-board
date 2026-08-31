@@ -112,7 +112,11 @@ class Controller_Task extends Controller_Template{
             return $this->json_response(array('error' => 'id not found'), 404);
         }
         $subtask = \Model\SubTask::find_by_id($id);
-        return $this->json_response(array('id' => (int)$id, 'done' => (int)$subtask['done']));
+        $task_id = $subtask['task_id'];
+        $state = $this->task_state($task_id);
+        $done = ($state['total_count'] > 0 && $state['done_count'] === $state['total_count']) ? 1 : 0;
+        \Model\Task::set_done($task_id, $done);
+        return $this->json_response($this->task_state($task_id));
     }
 
     public function action_subtask_delete(){
@@ -131,7 +135,10 @@ class Controller_Task extends Controller_Template{
             return $this->json_response(array('error' => 'id not found'), 404);
         }
         $task = \Model\Task::find_by_id($id);
-        return $this->json_response(array('id' => (int)$id, 'done' => (int)$task['done']));
+        if ((int) $task['done'] === 1){
+            \Model\SubTask::set_done_by_task_id($id, 1);
+        }
+        return $this->json_response($this->task_state($id));
     }
 
     private function attach_subtasks($tasks){
@@ -185,5 +192,25 @@ class Controller_Task extends Controller_Template{
 
     private function json_response($data, $status = 200){
         return new Response(json_encode($data), $status, array('Content-Type' => 'application/json'));
+    }
+
+    private function task_state($task_id){
+        $task = \Model\Task::find_by_id($task_id);
+        $rows = \Model\SubTask::find_by_task_ids(array($task_id));
+        $subtasks = array();
+        foreach ($rows as $row){
+            $subtasks[] = array('id' => (int) $row['id'], 'done' => (int) $row['done']);
+        }
+        $counts = \Model\SubTask::count_by_task_ids(array($task_id));
+        $total_count = empty($counts) ? 0 : (int) $counts[0]['total_count'];
+        $done_count  = empty($counts) ? 0 : (int) $counts[0]['done_count'];
+
+        return array(
+            'id'          => (int) $task_id,
+            'done'        => (int) $task['done'],
+            'done_count'  => $done_count,
+            'total_count' => $total_count,
+            'subtasks'    => $subtasks,
+        );
     }
 }

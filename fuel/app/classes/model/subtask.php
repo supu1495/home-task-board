@@ -43,4 +43,7 @@ class SubTask{
         $query->group_by('sub_task.task_id');
         return $query->execute()->as_array();
     }
+    public static function set_done_by_task_id($task_id, $done){
+        return \DB::update('sub_task')->set(array('done' => $done))->where('task_id', $task_id)->where('deleted_at', null)->execute();
+    }
 }
