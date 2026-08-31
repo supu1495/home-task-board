@@ -160,7 +160,7 @@ return array(
 		/**
 		 * Encoding mechanism to use on htmlentities()
 		 */
-		// 'htmlentities_flags' => ENT_QUOTES,
+		'htmlentities_flags' => ENT_QUOTES,
 
 		/**
 		 * Whether to encode HTML entities as well
@@ -170,7 +170,7 @@ return array(
 		/**
 		 * Whether to automatically filter view data
 		 */
-		// 'auto_filter_output'  => true,
+		'auto_filter_output'  => true,
 
 		/**
 		 * With output encoding switched on all objects passed will be converted to strings or
