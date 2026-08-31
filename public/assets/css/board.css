@@ -82,3 +82,10 @@ button.check{background:none;padding:0;font-family:inherit}
 .addtag button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
 .modal-close{display:flex;justify-content:flex-end;margin-top:14px}
 .modal-close button{background:#eef1f6;border:1px solid var(--line);border-radius:8px;padding:8px 16px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--text)}
+
+.lockwrap{display:flex;justify-content:center;padding:40px 0}
+.lockbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;width:360px;max-width:92vw}
+.lockbox h2{font-size:15px;font-weight:800;margin-bottom:6px}
+.lockmsg{font-size:11.5px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+.lockerr{background:#fdecea;border:1px solid #f5c2c0;color:#b3261e;font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;margin-bottom:12px}
+.lockbox .inp{margin-bottom:12px}
