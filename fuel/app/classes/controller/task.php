@@ -3,18 +3,20 @@ class Controller_Task extends Controller_Template{
     public function before()
     {
         parent::before();
-        if (Session::get('authenticated')){
-            return;
+
+        if ( ! Session::get('authenticated')){
+            if (Input::is_ajax()){
+                $response = new Response(
+                    json_encode(array('error' => 'unauthorized')),
+                    401,
+                    array('Content-Type' => 'application/json')
+                );
+                $response->send(true);
+                exit;
+            }
+            Response::redirect('lock/index');
         }
-        if (Input::is_ajax()){
-            $response = new Response(
-                json_encode(array('error' => 'unauthorized')),
-                401,
-                array('Content-Type' => 'application/json')
-            );
-            $response->send(true);
-            exit;
-        }
+
         if (Input::method() === 'POST' and ! Security::check_token()){
             if (Input::is_ajax()){
                 $response = new Response(
