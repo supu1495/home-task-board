@@ -1,5 +1,6 @@
 <script>
   var initialTasks = <?php echo $tasks_json; ?>;
+  var endpoints = { toggleTask: '<?php echo Uri::create('task/toggle'); ?>' };
 </script>
 <div class="grid">
     <div class="pane"><!-- 左の箱 -->
@@ -10,7 +11,7 @@
             <div data-bind="foreach: tasks">
                 <div class="task" data-bind="css: { done: done }, style: { borderLeftColor: tag_color }">
                     <div class="t-top">
-                        <div class="check"></div>
+                        <div class="check" data-bind="click: $root.toggleTask, text: done() ? '✓' : '', style: { background: done() ? tag_color : '', borderColor: done() ? tag_color : '' }"></div>
                         <div class="t-body">
                             <div class="t-titlerow">
                                 <span class="t-title" data-bind="text: title"></span>
