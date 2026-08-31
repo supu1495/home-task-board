@@ -5,6 +5,7 @@ class Controller_Task extends Controller_Template{
         $tasks = $this->attach_subtasks($tasks);
         $tasks = $this->format_tasks($tasks);
         $tags = \Model\Tag::find_all();
+        $tags = $this->format_tags($tags);
 
         $form = array(
             'id' => '',
@@ -16,6 +17,7 @@ class Controller_Task extends Controller_Template{
         );
         $view = View::forge('task/index', array('tasks' => $tasks, 'tags' => $tags, 'form' => $form));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
+        $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->template->content = $view;
     }
 
@@ -24,6 +26,7 @@ class Controller_Task extends Controller_Template{
         $tasks = $this->attach_subtasks($tasks);
         $tasks = $this->format_tasks($tasks);
         $tags = \Model\Tag::find_all();
+        $tags = $this->format_tags($tags);
         $task = \Model\Task::find_by_id($id);
 
         if ( ! $task){
@@ -47,6 +50,7 @@ class Controller_Task extends Controller_Template{
         $form['subtasks'] = \Model\SubTask::find_by_task_ids(array($id));
         $view = View::forge('task/index', array('tasks' => $tasks, 'tags' => $tags, 'form' => $form));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
+        $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->template->content = $view;
     }
 
@@ -161,6 +165,7 @@ class Controller_Task extends Controller_Template{
             }
             $tasks[$key]['id'] = (int) $task['id'];
             $tasks[$key]['done'] = (int) $task['done'];
+            $tasks[$key]['tag_id'] = $task['tag_id'] === null ? null : (int) $task['tag_id'];
             $tasks[$key]['subtasks'] = $rows;
             $tasks[$key]['total_count'] = $count ? (int)$count['total_count'] : 0;
             $tasks[$key]['done_count'] = $count ? (int)$count['done_count'] : 0;
@@ -188,6 +193,13 @@ class Controller_Task extends Controller_Template{
             }
         }
         return $tasks;
+    }
+
+    private function format_tags($tags){
+        foreach ($tags as $key => $tag){
+            $tags[$key]['id'] = (int) $tag['id'];
+        }
+        return $tags;
     }
 
     private function json_response($data, $status = 200){
