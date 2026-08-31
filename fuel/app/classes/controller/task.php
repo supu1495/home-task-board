@@ -1,5 +1,22 @@
 <?php
 class Controller_Task extends Controller_Template{
+    public function before()
+    {
+        parent::before();
+        if (Session::get('authenticated')){
+            return;
+        }
+        if (Input::is_ajax()){
+            $response = new Response(
+                json_encode(array('error' => 'unauthorized')),
+                401,
+                array('Content-Type' => 'application/json')
+            );
+            $response->send(true);
+            exit;
+        }
+        Response::redirect('lock/index');
+    }
     public function action_index(){
         $tasks = $this->build_tasks();
         $tags = $this->format_tags(\Model\Tag::find_all());
@@ -25,7 +42,7 @@ class Controller_Task extends Controller_Template{
         $tags = $this->format_tags(\Model\Tag::find_all());
         $task = \Model\Task::find_by_id($id);
         $filter_tag_id = Cookie::get('filter_tag_id');
-        $filter_tag_id = ctype_digit((string) $filter_tag_id) ? (int) $filter_tag_id : null;
+        $filter_tag_id = ctype_digit((string) $filter_tag_id) ? (int) $filter_tag_id : '';
 
         if ( ! $task){
             Response::redirect('task/index');
