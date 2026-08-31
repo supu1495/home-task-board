@@ -1,17 +1,28 @@
 <script>
   var initialTasks = <?php echo $tasks_json; ?>;
+  var initialTags = <?php echo $tags_json; ?>;
   var endpoints = {
     toggleTask: '<?php echo Uri::create('task/toggle'); ?>',
     toggleSubtask: '<?php echo Uri::create('task/subtask_toggle'); ?>'
   };
 </script>
-<div class="grid">
+<div id="app">
+    <div class="filters">
+        <span class="chip" data-bind="click: selectAll, css: { on: selectedTagId() === null }">すべて</span>
+        <!-- ko foreach: tags -->
+        <span class="chip" data-bind="click: $root.selectTag, css: { on: $root.selectedTagId() === id }">
+            <span class="dot" data-bind="style: { background: color }"></span>
+            <span data-bind="text: name"></span>
+        </span>
+        <!-- /ko -->
+    </div>
+    <div class="grid">
     <div class="pane"><!-- 左の箱 -->
         <div class="pane-h"><!-- タスク一覧 -->
-            タスク一覧(<?php echo count($tasks); ?>件)
+            <span data-bind="text: 'タスク一覧(' + filteredTasks().length + '件)'"></span>
         </div>
         <div class="board" id="board"><!-- カードを並べる箱 -->
-            <div data-bind="foreach: tasks">
+            <div data-bind="foreach: filteredTasks">
                 <div class="task" data-bind="css: { done: done }, style: { borderLeftColor: tag_color }">
                     <div class="t-top">
                         <div class="check" data-bind="click: $root.toggleTask, text: done() ? '✓' : '', style: { background: done() ? tag_color : '', borderColor: done() ? tag_color : '' }"></div>
@@ -106,5 +117,6 @@
                 <button class="submit" type="submit">＋ 追加する</button>
             </form>
         <?php endif; ?>
+    </div>
     </div>
 </div>

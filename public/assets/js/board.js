@@ -1,6 +1,15 @@
-function TaskBoard(tasks){
+function TaskBoard(tasks, tags){
     var self = this;
     self.tasks = ko.observableArray(tasks.map(function(task){ return new Task(task)}));
+    self.tags = ko.observableArray(tags);
+    self.selectedTagId = ko.observable(null);
+    self.selectTag = function(tag){ self.selectedTagId(tag.id); };
+    self.selectAll = function(){ self.selectedTagId(null); };
+    self.filteredTasks = ko.computed(function(){
+        var id = self.selectedTagId();
+        if (id === null){ return self.tasks(); }
+        return self.tasks().filter(function(task){ return task.tag_id === id; });
+    });
     var applyState = function(state){
         var task = null;
         var list = self.tasks();
@@ -56,4 +65,4 @@ function SubTask(data){
     Object.assign(this, data);
     this.done = ko.observable(data.done);
 }
-ko.applyBindings(new TaskBoard(initialTasks), document.getElementById('board'));
+ko.applyBindings(new TaskBoard(initialTasks, initialTags), document.getElementById('app'));
