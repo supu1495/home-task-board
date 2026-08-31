@@ -1,5 +1,6 @@
 function TaskBoard(tasks, tags){
     var self = this;
+    var csrf = csrfToken;
 
     self.tasks = ko.observableArray(tasks.map(function(task){ return new Task(task); }));
     self.tags = ko.observableArray(tags.map(function(tag){ return new Tag(tag); }));
@@ -18,13 +19,22 @@ function TaskBoard(tasks, tags){
         return self.tasks().filter(function(task){ return task.tag_id === id; });
     });
 
-    var post = function(url, params){
-        return fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: new URLSearchParams(params) })
-            .then(function(res){
-                if (res.status === 401){ window.location.reload(); throw new Error('unauthorized'); }
-                if ( ! res.ok){ throw new Error('request failed'); }
-                return res.json();
-            });
+     var post = function(url, params){
+        params[csrfKey] = csrf;
+        return fetch(url, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: new URLSearchParams(params)
+        })
+        .then(function(res){
+            if (res.status === 401){ window.location.reload(); throw new Error('unauthorized'); }
+            if ( ! res.ok){ throw new Error('request failed'); }
+            return res.json();
+        })
+        .then(function(data){
+            if (data.csrf_token){ csrf = data.csrf_token; }
+            return data;
+        });
     };
 
     var saveFilter = function(tagId){

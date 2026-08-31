@@ -12,6 +12,7 @@
                 <div class="brand">家庭内タスク掲示板</div>
                 <?php if (Session::get('authenticated')): ?>
                 <form action="<?php echo Uri::create('lock/logout'); ?>" method="post">
+                    <input type="hidden" name="<?php echo Config::get('security.csrf_token_key'); ?>" value="<?php echo Security::fetch_token(); ?>">
                     <button class="lockbtn" type="submit">🔓 ロックする</button>
                 </form>
                 <?php endif; ?>

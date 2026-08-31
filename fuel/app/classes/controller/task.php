@@ -15,7 +15,19 @@ class Controller_Task extends Controller_Template{
             $response->send(true);
             exit;
         }
-        Response::redirect('lock/index');
+        if (Input::method() === 'POST' and ! Security::check_token()){
+            if (Input::is_ajax()){
+                $response = new Response(
+                    json_encode(array('error' => 'invalid token')),
+                    403,
+                    array('Content-Type' => 'application/json')
+                );
+                $response->send(true);
+                exit;
+            }
+            Session::set_flash('message', '不正なリクエストです。もう一度お試しください。');
+            Response::redirect('task/index');
+        }
     }
     public function action_index(){
         $tasks = $this->build_tasks();
@@ -305,6 +317,7 @@ class Controller_Task extends Controller_Template{
     }
 
     private function json_response($data, $status = 200){
+        $data['csrf_token'] = Security::fetch_token();
         return new Response(json_encode($data), $status, array('Content-Type' => 'application/json'));
     }
 

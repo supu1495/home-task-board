@@ -1,5 +1,13 @@
 <?php
 class Controller_Lock extends Controller_Template{
+    public function before(){
+        parent::before();
+        if (Input::method() === 'POST' and ! Security::check_token()){
+            Session::set_flash('lock_error', '不正なリクエストです。もう一度お試しください。');
+            Response::redirect('lock/index');
+        }
+    }
+
     public function action_index(){
         if (Session::get('authenticated')){
             Response::redirect('task/index');
