@@ -105,8 +105,14 @@ class Controller_Task extends Controller_Template{
 
     public function action_subtask_toggle(){
         $id = Input::post('id');
-        \Model\SubTask::toggle_done($id);
-        Response::redirect('task/index');
+        if (! ctype_digit($id)){
+            return $this->json_response(array('error' => 'id is bad'), 400);
+        }
+        if (\Model\SubTask::toggle_done($id) === 0){
+            return $this->json_response(array('error' => 'id not found'), 404);
+        }
+        $subtask = \Model\SubTask::find_by_id($id);
+        return $this->json_response(array('id' => (int)$id, 'done' => (int)$subtask['done']));
     }
 
     public function action_subtask_delete(){
@@ -114,6 +120,18 @@ class Controller_Task extends Controller_Template{
         $task_id = Input::post('task_id');
         \Model\SubTask::delete($id);
         Response::redirect('task/edit/'.$task_id);
+    }
+
+    public function action_toggle(){
+        $id = Input::post('id');
+        if (! ctype_digit($id)){
+            return $this->json_response(array('error' => 'id is bad'), 400);
+        }
+        if (\Model\Task::toggle_done($id) === 0){
+            return $this->json_response(array('error' => 'id not found'), 404);
+        }
+        $task = \Model\Task::find_by_id($id);
+        return $this->json_response(array('id' => (int)$id, 'done' => (int)$task['done']));
     }
 
     private function attach_subtasks($tasks){
@@ -163,5 +181,9 @@ class Controller_Task extends Controller_Template{
             }
         }
         return $tasks;
+    }
+
+    private function json_response($data, $status = 200){
+        return new Response(json_encode($data), $status, array('Content-Type' => 'application/json'));
     }
 }

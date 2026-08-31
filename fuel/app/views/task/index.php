@@ -1,5 +1,9 @@
 <script>
   var initialTasks = <?php echo $tasks_json; ?>;
+  var endpoints = {
+    toggleTask: '<?php echo Uri::create('task/toggle'); ?>',
+    toggleSubtask: '<?php echo Uri::create('task/subtask_toggle'); ?>'
+  };
 </script>
 <div class="grid">
     <div class="pane"><!-- 左の箱 -->
@@ -10,7 +14,7 @@
             <div data-bind="foreach: tasks">
                 <div class="task" data-bind="css: { done: done }, style: { borderLeftColor: tag_color }">
                     <div class="t-top">
-                        <div class="check"></div>
+                        <div class="check" data-bind="click: $root.toggleTask, text: done() ? '✓' : '', style: { background: done() ? tag_color : '', borderColor: done() ? tag_color : '' }"></div>
                         <div class="t-body">
                             <div class="t-titlerow">
                                 <span class="t-title" data-bind="text: title"></span>
@@ -29,10 +33,7 @@
                             </div>
                             <div class="subs" data-bind="foreach: subtasks">
                                 <div class="subrow" data-bind="css: { done: done }">
-                                    <form action="<?php echo Uri::create('task/subtask_toggle'); ?>" method="post">
-                                        <input type="hidden" name="id" data-bind="attr: { value: id }">
-                                        <button class="check" type="submit" data-bind="text: done ? '✓' : ''"></button>
-                                    </form>
+                                    <div class="check" data-bind="click: $root.toggleSubtask, text: done() ? '✓' : ''"></div>
                                     <span data-bind="text: title"></span>
                                 </div>
                             </div>
