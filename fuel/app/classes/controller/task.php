@@ -4,6 +4,8 @@ class Controller_Task extends Controller_Template{
         $tasks = \Model\Task::find_all();
         $tasks = $this->attach_subtasks($tasks);
         $tasks = $this->format_tasks($tasks);
+        $tasks = $this->build_tasks();
+        $tags = $this->format_tags(\Model\Tag::find_all());
         $tags = \Model\Tag::find_all();
         $tags = $this->format_tags($tags);
 
@@ -25,6 +27,8 @@ class Controller_Task extends Controller_Template{
         $tasks = \Model\Task::find_all();
         $tasks = $this->attach_subtasks($tasks);
         $tasks = $this->format_tasks($tasks);
+        $tasks = $this->build_tasks();
+        $tags = $this->format_tags(\Model\Tag::find_all());
         $tags = \Model\Tag::find_all();
         $tags = $this->format_tags($tags);
         $task = \Model\Task::find_by_id($id);
@@ -130,6 +134,60 @@ class Controller_Task extends Controller_Template{
         Response::redirect('task/edit/'.$task_id);
     }
 
+    public function action_tag_create(){
+        $name  = trim((string) Input::post('name'));
+        $color = trim((string) Input::post('color'));
+
+        if ($name === '' || mb_strlen($name) > 20){
+            return $this->json_response(array('error' => 'name is bad'), 400);
+        }
+        if ($color !== '' && ! preg_match('/\A#[0-9a-fA-F]{6}\z/', $color)){
+            return $this->json_response(array('error' => 'color is bad'), 400);
+        }
+
+        \Model\Tag::create(array(
+            'name'  => $name,
+            'color' => ($color === '' ? null : $color),
+        ));
+        return $this->json_response($this->board_state());
+    }
+
+    public function action_tag_update(){
+        $id    = Input::post('id');
+        $name  = trim((string) Input::post('name'));
+        $color = trim((string) Input::post('color'));
+
+        if ( ! ctype_digit($id)){
+            return $this->json_response(array('error' => 'id is bad'), 400);
+        }
+        if ($name === '' || mb_strlen($name) > 20){
+            return $this->json_response(array('error' => 'name is bad'), 400);
+        }
+        if ($color !== '' && ! preg_match('/\A#[0-9a-fA-F]{6}\z/', $color)){
+            return $this->json_response(array('error' => 'color is bad'), 400);
+        }
+        if ( ! \Model\Tag::find_by_id($id)){
+            return $this->json_response(array('error' => 'id not found'), 404);
+        }
+
+        \Model\Tag::update($id, array(
+            'name'  => $name,
+            'color' => ($color === '' ? null : $color),
+        ));
+        return $this->json_response($this->board_state());
+    }
+
+    public function action_tag_delete(){
+        $id = Input::post('id');
+        if ( ! ctype_digit($id)){
+            return $this->json_response(array('error' => 'id is bad'), 400);
+        }
+        if (\Model\Tag::delete($id) === 0){
+            return $this->json_response(array('error' => 'id not found'), 404);
+        }
+        return $this->json_response($this->board_state());
+    }
+    
     public function action_toggle(){
         $id = Input::post('id');
         if (! ctype_digit($id)){
@@ -143,6 +201,19 @@ class Controller_Task extends Controller_Template{
             \Model\SubTask::set_done_by_task_id($id, 1);
         }
         return $this->json_response($this->task_state($id));
+    }
+
+    private function build_tasks(){
+        $tasks = \Model\Task::find_all();
+        $tasks = $this->attach_subtasks($tasks);
+        return $this->format_tasks($tasks);
+    }
+
+    private function board_state(){
+        return array(
+            'tags'  => $this->format_tags(\Model\Tag::find_all()),
+            'tasks' => $this->build_tasks(),
+        );
     }
 
     private function attach_subtasks($tasks){
