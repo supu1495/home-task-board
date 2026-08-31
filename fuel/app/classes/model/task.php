@@ -22,7 +22,7 @@ class Task{
         return \DB::insert('task')->set($values)->execute();
     }
     public static function update($id, $values){
-        return \DB::update('task')->set($values)->where('id', $id)->execute();
+        return \DB::update('task')->set($values)->where('id', $id)->where('deleted_at', null)->execute();
     }
     public static function delete($id){
         return \DB::update('task')->set(array('deleted_at' => \DB::expr('NOW()')))->where('id', $id)->where('deleted_at', null)->execute();
