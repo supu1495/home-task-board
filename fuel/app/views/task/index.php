@@ -3,7 +3,10 @@
   var initialTags = <?php echo $tags_json; ?>;
   var endpoints = {
     toggleTask: '<?php echo Uri::create('task/toggle'); ?>',
-    toggleSubtask: '<?php echo Uri::create('task/subtask_toggle'); ?>'
+    toggleSubtask: '<?php echo Uri::create('task/subtask_toggle'); ?>',
+    tagCreate: '<?php echo Uri::create('task/tag_create'); ?>',
+    tagUpdate: '<?php echo Uri::create('task/tag_update'); ?>',
+    tagDelete: '<?php echo Uri::create('task/tag_delete'); ?>'
   };
 </script>
 <div id="app">
@@ -15,6 +18,7 @@
             <span data-bind="text: name"></span>
         </span>
         <!-- /ko -->
+        <span class="chip manage" data-bind="click: openTagModal">⚙ タグ管理</span>
     </div>
     <div class="grid">
     <div class="pane"><!-- 左の箱 -->
@@ -117,6 +121,27 @@
                 <button class="submit" type="submit">＋ 追加する</button>
             </form>
         <?php endif; ?>
+        </div>
     </div>
+    <div class="overlay" data-bind="css: { show: isTagModalOpen }">
+        <div class="modal">
+            <h3>タグ管理</h3>
+            <div class="msub">名前と色を変更できます。削除してもタスクは残り、タグなしになります。</div>
+            <!-- ko foreach: tags -->
+            <div class="tagrow">
+                <input type="color" data-bind="value: color, event: { change: $root.updateTag }">
+                <input type="text" data-bind="value: name, event: { change: $root.updateTag }">
+                <span class="del" data-bind="click: $root.deleteTag">🗑</span>
+            </div>
+            <!-- /ko -->
+            <div class="addtag">
+                <input type="color" data-bind="value: newTagColor">
+                <input type="text" placeholder="新しいタグ名" data-bind="value: newTagName">
+                <button type="button" data-bind="click: createTag">追加</button>
+            </div>
+            <div class="modal-close">
+                <button type="button" data-bind="click: closeTagModal">閉じる</button>
+            </div>
+        </div>
     </div>
 </div>

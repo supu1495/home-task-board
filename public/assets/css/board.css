@@ -15,6 +15,8 @@
 .chip .dot{width:9px;height:9px;border-radius:50%}
 .chip.on{background:#eaefff;border-color:var(--accent);color:var(--accent)}
 
+.chip.manage{border-style:dashed;color:var(--muted);margin-left:2px}
+
 .grid{display:grid;grid-template-columns:1fr 330px;gap:14px;align-items:start}
 .pane{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 16px}
 .pane-h{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.03em;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
@@ -63,3 +65,17 @@ button.check{background:none;padding:0;font-family:inherit}
 
 .submit{width:100%;background:var(--accent);color:#fff;border:none;border-radius:9px;padding:12px;font-size:13.5px;font-weight:700;cursor:pointer;margin-top:4px}
 .formnote{font-size:10.5px;color:var(--muted);text-align:center;margin-top:9px;line-height:1.5}
+
+.overlay{display:none;position:fixed;inset:0;background:rgba(30,40,60,.38);align-items:center;justify-content:center;z-index:20}
+.overlay.show{display:flex}
+.modal{background:var(--card);border-radius:14px;padding:20px;width:380px;max-width:92vw;box-shadow:0 12px 40px rgba(30,40,80,.25)}
+.modal h3{font-size:14px;font-weight:800;margin-bottom:3px}
+.modal .msub{font-size:11px;color:var(--muted);margin-bottom:14px}
+.tagrow{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.tagrow input[type=color],.addtag input[type=color]{width:28px;height:28px;border:none;border-radius:6px;background:none;cursor:pointer;padding:0}
+.tagrow input[type=text],.addtag input[type=text]{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:13px;background:var(--field)}
+.tagrow .del{color:#d9534f;cursor:pointer;font-size:14px;padding:0 4px}
+.addtag{display:flex;align-items:center;gap:9px;border-top:1px dashed var(--line);padding-top:12px;margin-top:12px}
+.addtag button{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.modal-close{display:flex;justify-content:flex-end;margin-top:14px}
+.modal-close button{background:#eef1f6;border:1px solid var(--line);border-radius:8px;padding:8px 16px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--text)}

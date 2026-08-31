@@ -1,15 +1,30 @@
 function TaskBoard(tasks, tags){
     var self = this;
-    self.tasks = ko.observableArray(tasks.map(function(task){ return new Task(task)}));
-    self.tags = ko.observableArray(tags);
+
+    self.tasks = ko.observableArray(tasks.map(function(task){ return new Task(task); }));
+    self.tags = ko.observableArray(tags.map(function(tag){ return new Tag(tag); }));
     self.selectedTagId = ko.observable(null);
+    self.isTagModalOpen = ko.observable(false);
+    self.newTagName = ko.observable('');
+    self.newTagColor = ko.observable('#4f6bed');
+
     self.selectTag = function(tag){ self.selectedTagId(tag.id); };
     self.selectAll = function(){ self.selectedTagId(null); };
+
     self.filteredTasks = ko.computed(function(){
         var id = self.selectedTagId();
         if (id === null){ return self.tasks(); }
         return self.tasks().filter(function(task){ return task.tag_id === id; });
     });
+
+    var post = function(url, params){
+        return fetch(url, { method: 'POST', body: new URLSearchParams(params) })
+            .then(function(res){
+                if ( ! res.ok){ throw new Error('request failed'); }
+                return res.json();
+            });
+    };
+
     var applyState = function(state){
         var task = null;
         var list = self.tasks();
@@ -28,29 +43,56 @@ function TaskBoard(tasks, tags){
             });
         });
     };
-    self.toggleTask = function(task){
-        fetch(endpoints.toggleTask, {
-            method: 'POST', body: new URLSearchParams({ id: task.id })
-        })
-        .then(function(res){
-            if ( ! res.ok){ throw new Error('toggle failed'); }
-            return res.json();
-        })
-        .then(function(data){ applyState(data); })
-        .catch(function(e){ console.error(e); })
+
+    var applyBoard = function(state){
+        self.tags(state.tags.map(function(tag){ return new Tag(tag); }));
+        self.tasks(state.tasks.map(function(task){ return new Task(task); }));
+
+        var current = self.selectedTagId();
+        var exists = state.tags.some(function(tag){ return tag.id === current; });
+        if (current !== null && ! exists){ self.selectedTagId(null); }
     };
+
+    self.toggleTask = function(task){
+        post(endpoints.toggleTask, { id: task.id })
+            .then(applyState)
+            .catch(function(e){ console.error(e); });
+    };
+
     self.toggleSubtask = function(subtask){
-        fetch(endpoints.toggleSubtask, {
-            method: 'POST', body: new URLSearchParams({ id: subtask.id })
-        })
-        .then(function(res){
-            if ( ! res.ok){ throw new Error('toggle failed'); }
-            return res.json();
-        })
-        .then(function(data){ applyState(data); })
-        .catch(function(e){ console.error(e); })
+        post(endpoints.toggleSubtask, { id: subtask.id })
+            .then(applyState)
+            .catch(function(e){ console.error(e); });
+    };
+
+    self.openTagModal = function(){ self.isTagModalOpen(true); };
+    self.closeTagModal = function(){ self.isTagModalOpen(false); };
+
+    self.createTag = function(){
+        var name = self.newTagName().trim();
+        if (name === ''){ return; }
+        post(endpoints.tagCreate, { name: name, color: self.newTagColor() })
+            .then(function(state){
+                applyBoard(state);
+                self.newTagName('');
+            })
+            .catch(function(e){ console.error(e); });
+    };
+
+    self.updateTag = function(tag){
+        post(endpoints.tagUpdate, { id: tag.id, name: tag.name(), color: tag.color() })
+            .then(applyBoard)
+            .catch(function(e){ console.error(e); });
+    };
+
+    self.deleteTag = function(tag){
+        if ( ! window.confirm('このタグを削除しますか。タスクは残り、タグなしになります。')){ return; }
+        post(endpoints.tagDelete, { id: tag.id })
+            .then(applyBoard)
+            .catch(function(e){ console.error(e); });
     };
 }
+
 function Task(data){
     Object.assign(this, data);
     this.done = ko.observable(data.done);
@@ -61,8 +103,16 @@ function Task(data){
     }, this);
     this.subtasks = data.subtasks.map(function(subtask){ return new SubTask(subtask); });
 }
+
 function SubTask(data){
     Object.assign(this, data);
     this.done = ko.observable(data.done);
 }
+
+function Tag(data){
+    this.id = data.id;
+    this.name = ko.observable(data.name);
+    this.color = ko.observable(data.color || '#4f6bed');
+}
+
 ko.applyBindings(new TaskBoard(initialTasks, initialTags), document.getElementById('app'));
