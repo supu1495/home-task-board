@@ -19,8 +19,9 @@ function TaskBoard(tasks, tags){
     });
 
     var post = function(url, params){
-        return fetch(url, { method: 'POST', body: new URLSearchParams(params) })
+        return fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: new URLSearchParams(params) })
             .then(function(res){
+                if (res.status === 401){ window.location.reload(); throw new Error('unauthorized'); }
                 if ( ! res.ok){ throw new Error('request failed'); }
                 return res.json();
             });
