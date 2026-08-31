@@ -3,6 +3,8 @@ class Controller_Task extends Controller_Template{
     public function action_index(){
         $tasks = $this->build_tasks();
         $tags = $this->format_tags(\Model\Tag::find_all());
+        $filter_tag_id = Cookie::get('filter_tag_id');
+        $filter_tag_id = ctype_digit((string) $filter_tag_id) ? (int) $filter_tag_id : '';
 
         $form = array(
             'id' => '',
@@ -12,7 +14,7 @@ class Controller_Task extends Controller_Template{
             'tag_id' => '',
             'memo' => ''
         );
-        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: ''));
+        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->template->content = $view;
@@ -22,6 +24,8 @@ class Controller_Task extends Controller_Template{
         $tasks = $this->build_tasks();
         $tags = $this->format_tags(\Model\Tag::find_all());
         $task = \Model\Task::find_by_id($id);
+        $filter_tag_id = Cookie::get('filter_tag_id');
+        $filter_tag_id = ctype_digit((string) $filter_tag_id) ? (int) $filter_tag_id : null;
 
         if ( ! $task){
             Response::redirect('task/index');
@@ -42,7 +46,7 @@ class Controller_Task extends Controller_Template{
             }
         }
         $form['subtasks'] = \Model\SubTask::find_by_task_ids(array($id));
-        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: ''));
+        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->template->content = $view;
@@ -198,6 +202,20 @@ class Controller_Task extends Controller_Template{
         return $this->json_response($this->task_state($id));
     }
 
+    public function action_filter(){
+        $tag_id = Input::post('tag_id');
+
+        if ($tag_id === '' || $tag_id === null){
+            Cookie::delete('filter_tag_id');
+            return $this->json_response(array('tag_id' => null));
+        }
+        if ( ! ctype_digit($tag_id)){
+            return $this->json_response(array('error' => 'tag_id is bad'), 400);
+        }
+        Cookie::set('filter_tag_id', $tag_id);
+        return $this->json_response(array('tag_id' => (int) $tag_id));
+    }
+
     private function build_tasks(){
         $tasks = \Model\Task::find_all();
         $tasks = $this->attach_subtasks($tasks);
@@ -263,6 +281,7 @@ class Controller_Task extends Controller_Template{
 
     private function format_tags($tags){
         foreach ($tags as $key => $tag){
+            $tags[$key]['id'] = (int) $tag['id'];
             $tags[$key]['color'] = $tag['color'] === null ? '' : $tag['color'];
         }
         return $tags;

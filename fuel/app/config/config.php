@@ -311,5 +311,11 @@ return array(
 		 */
 		// 'language'  => array(),
 	// ),
-
+	'cookie' => array(
+		// 30日間保持する（既定の0はブラウザを閉じると消える）
+		'expiration' => 60 * 60 * 24 * 30,
+		'path'       => '/',
+		// JavaScriptから読めないようにする（XSS対策）
+		'http_only'  => true,
+    ),
 );

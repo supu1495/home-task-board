@@ -1,12 +1,14 @@
 <script>
   var initialTasks = <?php echo $tasks_json; ?>;
   var initialTags = <?php echo $tags_json; ?>;
+  var initialFilterTagId = <?php echo $filter_tag_id === '' ? 'null' : (int) $filter_tag_id; ?>;
   var endpoints = {
     toggleTask: '<?php echo Uri::create('task/toggle'); ?>',
     toggleSubtask: '<?php echo Uri::create('task/subtask_toggle'); ?>',
     tagCreate: '<?php echo Uri::create('task/tag_create'); ?>',
     tagUpdate: '<?php echo Uri::create('task/tag_update'); ?>',
-    tagDelete: '<?php echo Uri::create('task/tag_delete'); ?>'
+    tagDelete: '<?php echo Uri::create('task/tag_delete'); ?>',
+    filter: '<?php echo Uri::create('task/filter'); ?>'
   };
 </script>
 <div id="app">
