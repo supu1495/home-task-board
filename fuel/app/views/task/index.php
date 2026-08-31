@@ -19,6 +19,9 @@
         </span>
         <!-- /ko -->
         <span class="chip manage" data-bind="click: openTagModal">⚙ タグ管理</span>
+        <?php if ($flash): ?>
+            <div class="flash show">✓ <?php echo $flash; ?></div>
+        <?php endif; ?>
     </div>
     <div class="grid">
     <div class="pane"><!-- 左の箱 -->

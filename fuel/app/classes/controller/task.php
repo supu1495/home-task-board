@@ -1,13 +1,8 @@
 <?php
 class Controller_Task extends Controller_Template{
     public function action_index(){
-        $tasks = \Model\Task::find_all();
-        $tasks = $this->attach_subtasks($tasks);
-        $tasks = $this->format_tasks($tasks);
         $tasks = $this->build_tasks();
         $tags = $this->format_tags(\Model\Tag::find_all());
-        $tags = \Model\Tag::find_all();
-        $tags = $this->format_tags($tags);
 
         $form = array(
             'id' => '',
@@ -17,20 +12,15 @@ class Controller_Task extends Controller_Template{
             'tag_id' => '',
             'memo' => ''
         );
-        $view = View::forge('task/index', array('tasks' => $tasks, 'tags' => $tags, 'form' => $form));
+        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: ''));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->template->content = $view;
     }
 
     public function action_edit($id){
-        $tasks = \Model\Task::find_all();
-        $tasks = $this->attach_subtasks($tasks);
-        $tasks = $this->format_tasks($tasks);
         $tasks = $this->build_tasks();
         $tags = $this->format_tags(\Model\Tag::find_all());
-        $tags = \Model\Tag::find_all();
-        $tags = $this->format_tags($tags);
         $task = \Model\Task::find_by_id($id);
 
         if ( ! $task){
@@ -52,7 +42,7 @@ class Controller_Task extends Controller_Template{
             }
         }
         $form['subtasks'] = \Model\SubTask::find_by_task_ids(array($id));
-        $view = View::forge('task/index', array('tasks' => $tasks, 'tags' => $tags, 'form' => $form));
+        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: ''));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->template->content = $view;
@@ -73,6 +63,7 @@ class Controller_Task extends Controller_Template{
             }
         }
         \Model\Task::create($values);
+        Session::set_flash('message', 'タスクを登録しました');
         Response::redirect('task/index');
     }
 
@@ -92,12 +83,14 @@ class Controller_Task extends Controller_Template{
             }
         }
         \Model\Task::update($id, $values);
+        Session::set_flash('message', 'タスクを更新しました');
         Response::redirect('task/index');
     }
 
     public function action_delete(){
         $id = Input::post('id');
         \Model\Task::delete($id);
+        Session::set_flash('message', 'タスクを削除しました');
         Response::redirect('task/index');
     }
 
@@ -108,6 +101,7 @@ class Controller_Task extends Controller_Template{
             'title' => Input::post('title'),
         );
         \Model\SubTask::create($values);
+        Session::set_flash('message', 'サブタスクを追加しました');
         Response::redirect('task/edit/'.$task_id);
     }
 
@@ -131,6 +125,7 @@ class Controller_Task extends Controller_Template{
         $id = Input::post('id');
         $task_id = Input::post('task_id');
         \Model\SubTask::delete($id);
+        Session::set_flash('message', 'サブタスクを削除しました');
         Response::redirect('task/edit/'.$task_id);
     }
 
@@ -268,7 +263,7 @@ class Controller_Task extends Controller_Template{
 
     private function format_tags($tags){
         foreach ($tags as $key => $tag){
-            $tags[$key]['id'] = (int) $tag['id'];
+            $tags[$key]['color'] = $tag['color'] === null ? '' : $tag['color'];
         }
         return $tags;
     }
