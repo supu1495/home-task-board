@@ -22,4 +22,13 @@ class Controller_Lock extends Controller_Template{
         Session::set('authenticated', true);
         Response::redirect('task/index');
     }
+
+    public function action_logout(){
+        if (Input::method() !== 'POST'){
+            Response::redirect('lock/index');
+        }
+
+        Session::destroy();
+        Response::redirect('lock/index');
+    }
 }
