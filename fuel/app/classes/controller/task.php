@@ -400,7 +400,7 @@ class Controller_Task extends Controller_Template{
 
     private function json_response($data, $status = 200){
         $data['csrf_token'] = Security::fetch_token();
-        return new Response(json_encode($data), $status, array('Content-Type' => 'application/json'));
+        return new Response(json_encode($data, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), $status, array('Content-Type' => 'application/json'));
     }
 
     private function task_state($task_id){
