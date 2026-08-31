@@ -105,8 +105,14 @@ class Controller_Task extends Controller_Template{
 
     public function action_subtask_toggle(){
         $id = Input::post('id');
-        \Model\SubTask::toggle_done($id);
-        Response::redirect('task/index');
+        if (! ctype_digit($id)){
+            return $this->json_response(array('error' => 'id is bad'), 400);
+        }
+        if (\Model\SubTask::toggle_done($id) === 0){
+            return $this->json_response(array('error' => 'id not found'), 404);
+        }
+        $subtask = \Model\SubTask::find_by_id($id);
+        return $this->json_response(array('id' => (int)$id, 'done' => (int)$subtask['done']));
     }
 
     public function action_subtask_delete(){
