@@ -10,6 +10,11 @@
 .brand{font-size:18px;font-weight:800;display:flex;align-items:center;gap:9px}
 .brand small{font-size:11px;font-weight:600;color:var(--muted)}
 
+.filters{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center}
+.chip{background:var(--card);border:1px solid var(--line);color:var(--muted);font-size:12px;font-weight:700;padding:7px 15px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.chip .dot{width:9px;height:9px;border-radius:50%}
+.chip.on{background:#eaefff;border-color:var(--accent);color:var(--accent)}
+
 .grid{display:grid;grid-template-columns:1fr 330px;gap:14px;align-items:start}
 .pane{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px 16px}
 .pane-h{font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.03em;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
