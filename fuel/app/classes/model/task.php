@@ -30,4 +30,7 @@ class Task{
     public static function toggle_done($id){
         return \DB::update('task')->set(array('done' => \DB::expr('1 - done')))->where('id', $id)->where('deleted_at', null)->execute();
     }
+    public static function set_done($id, $done){
+        return \DB::update('task')->set(array('done' => $done))->where('id', $id)->where('deleted_at', null)->execute();
+    }
 }
