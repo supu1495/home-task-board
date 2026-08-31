@@ -43,7 +43,15 @@ class Controller_Task extends Controller_Template{
             'tag_id' => '',
             'memo' => ''
         );
-        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id));
+
+        $old = Session::get_flash('old') ?: array();
+        foreach ($old as $column => $value){
+            if (array_key_exists($column, $form)){
+                $form[$column] = $value;
+            }
+        }
+
+        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id, 'errors' => Session::get_flash('errors') ?: array()));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->template->content = $view;
@@ -69,13 +77,20 @@ class Controller_Task extends Controller_Template{
             'memo' => $task['memo'],
         );
 
+        $old = Session::get_flash('old') ?: array();
+        foreach ($old as $column => $value){
+            if (array_key_exists($column, $form)){
+                $form[$column] = $value;
+            }
+        }
+
         foreach ($form as $column => $value){
             if ($form[$column] === null){
                 $form[$column] = '';
             }
         }
         $form['subtasks'] = \Model\SubTask::find_by_task_ids(array($id));
-        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id));
+        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id, 'errors' => Session::get_flash('errors') ?: array()));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->template->content = $view;
@@ -83,16 +98,23 @@ class Controller_Task extends Controller_Template{
 
     public function action_create(){
         $values = array(
-            'title' => Input::post('title'),
-            'start_date' => Input::post('start_date'),
-            'deadline' => Input::post('deadline'),
-            'tag_id' => Input::post('tag_id'),
-            'memo' => Input::post('memo'),
+            'title'      => trim((string) Input::post('title')),
+            'start_date' => (string) Input::post('start_date'),
+            'deadline'   => (string) Input::post('deadline'),
+            'tag_id'     => (string) Input::post('tag_id'),
+            'memo'       => trim((string) Input::post('memo')),
         );
+
+        $errors = $this->validate_task($values);
+        if ($errors){
+            Session::set_flash('errors', $errors);
+            Session::set_flash('old', $values);
+            Response::redirect('task/index');
+        }
 
         foreach (array('start_date', 'deadline', 'tag_id', 'memo') as $column){
             if ($values[$column] === ''){
-                    $values[$column] = null;
+                $values[$column] = null;
             }
         }
         \Model\Task::create($values);
@@ -102,17 +124,28 @@ class Controller_Task extends Controller_Template{
 
     public function action_update(){
         $id = Input::post('id');
+        if ( ! ctype_digit($id)){
+            Response::redirect('task/index');
+        }
+
         $values = array(
-            'title' => Input::post('title'),
-            'start_date' => Input::post('start_date'),
-            'deadline' => Input::post('deadline'),
-            'tag_id' => Input::post('tag_id'),
-            'memo' => Input::post('memo'),
+            'title'      => trim((string) Input::post('title')),
+            'start_date' => (string) Input::post('start_date'),
+            'deadline'   => (string) Input::post('deadline'),
+            'tag_id'     => (string) Input::post('tag_id'),
+            'memo'       => trim((string) Input::post('memo')),
         );
+
+        $errors = $this->validate_task($values);
+        if ($errors){
+            Session::set_flash('errors', $errors);
+            Session::set_flash('old', $values);
+            Response::redirect('task/edit/'.$id);
+        }
 
         foreach (array('start_date', 'deadline', 'tag_id', 'memo') as $column){
             if ($values[$column] === ''){
-                    $values[$column] = null;
+                $values[$column] = null;
             }
         }
         \Model\Task::update($id, $values);
@@ -133,6 +166,11 @@ class Controller_Task extends Controller_Template{
             'task_id' => $task_id,
             'title' => Input::post('title'),
         );
+        $title = trim((string) Input::post('title'));
+        if ($title === '' or mb_strlen($title) > 50){
+            Session::set_flash('errors', array('サブタスク名は1〜50文字で入力してください'));
+            Response::redirect('task/edit/'.$task_id);
+        }
         \Model\SubTask::create($values);
         Session::set_flash('message', 'サブタスクを追加しました');
         Response::redirect('task/edit/'.$task_id);
@@ -243,6 +281,50 @@ class Controller_Task extends Controller_Template{
         }
         Cookie::set('filter_tag_id', $tag_id);
         return $this->json_response(array('tag_id' => (int) $tag_id));
+    }
+
+    private function validate_task($values){
+        $errors = array();
+
+        if ($values['title'] === ''){
+            $errors[] = 'タイトルを入力してください';
+        } elseif (mb_strlen($values['title']) > 50){
+            $errors[] = 'タイトルは50文字以内で入力してください';
+        }
+
+        foreach (array('start_date' => '開始日', 'deadline' => '締切') as $column => $label){
+            if ($values[$column] !== '' and ! $this->is_date($values[$column])){
+                $errors[] = $label.'は正しい日付を入力してください';
+            }
+        }
+
+        if ($values['start_date'] !== '' and $values['deadline'] !== ''
+            and $values['start_date'] > $values['deadline']){
+            $errors[] = '締切は開始日以降の日付を入力してください';
+        }
+
+        if ($values['tag_id'] !== ''){
+            if ( ! ctype_digit($values['tag_id']) or ! \Model\Tag::find_by_id($values['tag_id'])){
+                $errors[] = 'タグの指定が正しくありません';
+            }
+        }
+
+        if (mb_strlen($values['memo']) > 255){
+            $errors[] = 'メモは255文字以内で入力してください';
+        }
+
+        return $errors;
+    }
+
+    private function is_date($date){
+        $parts = explode('-', $date);
+        if (count($parts) !== 3){
+            return false;
+        }
+        if ( ! ctype_digit($parts[0].$parts[1].$parts[2])){
+            return false;
+        }
+        return checkdate((int) $parts[1], (int) $parts[2], (int) $parts[0]);
     }
 
     private function build_tasks(){

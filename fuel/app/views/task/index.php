@@ -83,7 +83,13 @@ $csrf_token = Security::fetch_token();
                     <a class="reset" href="<?php echo Uri::create('task/index'); ?>">✕ キャンセル</a>
                 <?php endif; ?>
             </div>
-
+            <?php if ($errors): ?>
+                <div class="errbox">
+                    <?php foreach ($errors as $error): ?>
+                        <div>・<?php echo $error; ?></div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
             <input type="hidden" name="id" value="<?php echo $form['id']; ?>">
 
             <div class="field">
