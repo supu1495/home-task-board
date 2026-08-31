@@ -1,3 +1,7 @@
+<?php
+$csrf_key = Config::get('security.csrf_token_key');
+$csrf_token = Security::fetch_token();
+?>
 <script>
   var initialTasks = <?php echo $tasks_json; ?>;
   var initialTags = <?php echo $tags_json; ?>;
@@ -10,6 +14,8 @@
     tagDelete: '<?php echo Uri::create('task/tag_delete'); ?>',
     filter: '<?php echo Uri::create('task/filter'); ?>'
   };
+  var csrfKey = '<?php echo $csrf_key; ?>';
+  var csrfToken = '<?php echo $csrf_token; ?>';
 </script>
 <div id="app">
     <div class="filters">
@@ -42,6 +48,7 @@
                                 <span class="due" data-bind="text: '締切' + deadline, css: { soon: soon }"></span>
                                 <a class="reset" data-bind="attr: { href: '<?php echo Uri::create('task/edit'); ?>/' + id }">編集</a>
                                 <form action="<?php echo Uri::create('task/delete'); ?>" method="post">
+                                    <input type="hidden" name="<?php echo $csrf_key; ?>" value="<?php echo $csrf_token; ?>">
                                     <input type="hidden" name="id" data-bind="attr: { value: id }">
                                     <button type="submit">🗑</button>
                                 </form>
@@ -66,6 +73,7 @@
     <div class="pane form">
         <?php $is_edit = ($form['id'] !== ''); ?>
         <form action="<?php echo Uri::create($is_edit ? 'task/update' : 'task/create'); ?>" method="post">
+            <input type="hidden" name="<?php echo $csrf_key; ?>" value="<?php echo $csrf_token; ?>">
             <div class="pane-h">
                 <span>
                     <?php echo $is_edit ? '✎ タスクを編集' : '＋ 新規タスク登録'; ?>
@@ -111,6 +119,7 @@
             <div class="pane-h">サブタスク</div>
                 <?php foreach ($form['subtasks'] as $subtask): ?>
                     <form action="<?php echo Uri::create('task/subtask_delete'); ?>" method="post">
+                        <input type="hidden" name="<?php echo $csrf_key; ?>" value="<?php echo $csrf_token; ?>">
                         <input type="hidden" name="id" value="<?php echo $subtask['id']; ?>">
                         <input type="hidden" name="task_id" value="<?php echo $form['id'] ?>">
                         <span><?php echo $subtask['title'] ?></span>
@@ -118,6 +127,7 @@
                     </form>
                 <?php endforeach; ?>
             <form action="<?php echo Uri::create('task/subtask_create'); ?>" method="post">
+                <input type="hidden" name="<?php echo $csrf_key; ?>" value="<?php echo $csrf_token; ?>">
                 <input type="hidden" name="task_id" value="<?php echo $form['id']; ?>">
                 <div class="field">
                     <label class="lbl">サブタスクを追加</label>
