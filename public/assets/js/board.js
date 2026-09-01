@@ -58,6 +58,12 @@ function TaskBoard(tasks, tags){
         inputs.forEach(function(input){ input.value = csrf; });
     };
 
+    var handleError = function(e){
+        console.error(e);
+        if (e.message === 'unauthorized'){ return; }
+        alert('通信に失敗しました。ページを再読み込みしてもう一度お試しください。');
+    };
+
     var post = function(url, params){
         params[csrfKey] = csrf;
         return fetch(url, {
@@ -83,7 +89,7 @@ function TaskBoard(tasks, tags){
         post(endpoints.filter, {
             tag_id: self.selectedTagId() === null ? '' : self.selectedTagId(),
             sort: self.sortKey()
-        }).catch(function(e){ console.error(e); });
+        }).catch(handleError);
     };
 
     self.sortKey.subscribe(saveViewState);
@@ -120,13 +126,13 @@ function TaskBoard(tasks, tags){
     self.toggleTask = function(task){
         post(endpoints.toggleTask, { id: task.id })
             .then(applyState)
-            .catch(function(e){ console.error(e); });
+            .catch(handleError);
     };
 
     self.toggleSubtask = function(subtask){
         post(endpoints.toggleSubtask, { id: subtask.id })
             .then(applyState)
-            .catch(function(e){ console.error(e); });
+            .catch(handleError);
     };
 
     self.openTagModal = function(){ self.isTagModalOpen(true); };
@@ -135,25 +141,34 @@ function TaskBoard(tasks, tags){
     self.createTag = function(){
         var name = self.newTagName().trim();
         if (name === ''){ return; }
+        if ([...name].length > 20){
+            alert('タグ名は20文字以内で入力してください');
+            return;
+        }
         post(endpoints.tagCreate, { name: name, color: self.newTagColor() })
             .then(function(state){
                 applyBoard(state);
                 self.newTagName('');
             })
-            .catch(function(e){ console.error(e); });
+            .catch(handleError);
     };
 
     self.updateTag = function(tag){
-        post(endpoints.tagUpdate, { id: tag.id, name: tag.name(), color: tag.color() })
+        var name = tag.name().trim();
+        if (name === '' || [...name].length > 20){
+            alert('タグ名は1〜20文字で入力してください');
+            return;
+        }
+        post(endpoints.tagUpdate, { id: tag.id, name: name, color: tag.color() })
             .then(applyBoard)
-            .catch(function(e){ console.error(e); });
+            .catch(handleError);
     };
 
     self.deleteTag = function(tag){
         if ( ! window.confirm('このタグを削除しますか。タスクは残り、タグなしになります。')){ return; }
         post(endpoints.tagDelete, { id: tag.id })
             .then(applyBoard)
-            .catch(function(e){ console.error(e); });
+            .catch(handleError);
     };
 }
 
