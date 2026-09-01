@@ -40,6 +40,9 @@ $csrf_token = Security::fetch_token();
     <?php if ($flash): ?>
         <div class="flash show">✓ <?php echo $flash; ?></div>
     <?php endif; ?>
+    <?php if ($flash_error): ?>
+        <div class="flash show error">× <?php echo $flash_error; ?></div>
+    <?php endif; ?>
     <div class="grid">
     <div class="pane"><!-- 左の箱 -->
         <div class="pane-h"><!-- タスク一覧 -->

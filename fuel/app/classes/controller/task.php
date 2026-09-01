@@ -27,7 +27,7 @@ class Controller_Task extends Controller_Template{
                 $response->send(true);
                 exit;
             }
-            Session::set_flash('message', '不正なリクエストです。もう一度お試しください。');
+            Session::set_flash('error', '不正なリクエストです。もう一度お試しください。');
             Response::redirect('task/index');
         }
     }
@@ -55,7 +55,7 @@ class Controller_Task extends Controller_Template{
         }
         $old_subtasks = (isset($old['subtasks']) and is_array($old['subtasks'])) ? array_values($old['subtasks']) : array();
 
-        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id, 'errors' => Session::get_flash('errors') ?: array(), 'sort_key' => $sort_key));
+        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'flash_error' => Session::get_flash('error') ?: '', 'filter_tag_id' => $filter_tag_id, 'errors' => Session::get_flash('errors') ?: array(), 'sort_key' => $sort_key));
         $view->set_safe('old_subtasks_json', json_encode($old_subtasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
@@ -97,7 +97,7 @@ class Controller_Task extends Controller_Template{
             }
         }
         $form['subtasks'] = \Model\SubTask::find_by_task_ids(array($id));
-        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id, 'errors' => Session::get_flash('errors') ?: array(), 'sort_key' => $sort_key,));
+        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'flash_error' => Session::get_flash('error') ?: '', 'filter_tag_id' => $filter_tag_id, 'errors' => Session::get_flash('errors') ?: array(), 'sort_key' => $sort_key,));
         $view->set_safe('old_subtasks_json', json_encode($old_subtasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
