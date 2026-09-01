@@ -4,6 +4,7 @@ function TaskBoard(tasks, tags){
 
     self.tasks = ko.observableArray(tasks.map(function(task){ return new Task(task); }));
     self.tags = ko.observableArray(tags.map(function(tag){ return new Tag(tag); }));
+
     var savedTagId = tags.some(function(tag){ return tag.id === initialFilterTagId; }) ? initialFilterTagId : null;
     self.selectedTagId = ko.observable(savedTagId);
     self.sortKey = ko.observable(initialSortKey);
@@ -52,6 +53,11 @@ function TaskBoard(tasks, tags){
         return list.slice().sort(function(a, b){ return compare(a, b, key); });
     });
 
+    var syncCsrfInputs = function(){
+        var inputs = document.querySelectorAll('input[name="' + csrfKey + '"]');
+        inputs.forEach(function(input){ input.value = csrf; });
+    };
+
     var post = function(url, params){
         params[csrfKey] = csrf;
         return fetch(url, {
@@ -65,7 +71,10 @@ function TaskBoard(tasks, tags){
             return res.json();
         })
         .then(function(data){
-            if (data.csrf_token){ csrf = data.csrf_token; }
+            if (data.csrf_token){
+                csrf = data.csrf_token;
+                syncCsrfInputs();
+            }
             return data;
         });
     };
@@ -105,6 +114,7 @@ function TaskBoard(tasks, tags){
         var current = self.selectedTagId();
         var exists = state.tags.some(function(tag){ return tag.id === current; });
         if (current !== null && ! exists){ self.selectedTagId(null); }
+        syncCsrfInputs();
     };
 
     self.toggleTask = function(task){
