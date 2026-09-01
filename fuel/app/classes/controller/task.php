@@ -211,7 +211,7 @@ class Controller_Task extends Controller_Template{
 
     public function action_subtask_toggle(){
         $id = Input::post('id');
-        if (! ctype_digit($id)){
+        if ( ! ctype_digit($id)){
             return $this->json_response(array('error' => 'id is bad'), 400);
         }
         if (\Model\SubTask::toggle_done($id) === 0){
@@ -220,7 +220,7 @@ class Controller_Task extends Controller_Template{
         $subtask = \Model\SubTask::find_by_id($id);
         $task_id = $subtask['task_id'];
         $state = $this->task_state($task_id);
-        $done = ($state['total_count'] > 0 && $state['done_count'] === $state['total_count']) ? 1 : 0;
+        $done = ($state['total_count'] > 0 and $state['done_count'] === $state['total_count']) ? 1 : 0;
         \Model\Task::set_done($task_id, $done);
         return $this->json_response($this->task_state($task_id));
     }
@@ -240,10 +240,10 @@ class Controller_Task extends Controller_Template{
         $name  = trim((string) Input::post('name'));
         $color = trim((string) Input::post('color'));
 
-        if ($name === '' || mb_strlen($name) > 20){
+        if ($name === '' or mb_strlen($name) > 20){
             return $this->json_response(array('error' => 'name is bad'), 400);
         }
-        if ($color !== '' && ! preg_match('/\A#[0-9a-fA-F]{6}\z/', $color)){
+        if ($color !== '' and ! preg_match('/\A#[0-9a-fA-F]{6}\z/', $color)){
             return $this->json_response(array('error' => 'color is bad'), 400);
         }
 
@@ -262,10 +262,10 @@ class Controller_Task extends Controller_Template{
         if ( ! ctype_digit($id)){
             return $this->json_response(array('error' => 'id is bad'), 400);
         }
-        if ($name === '' || mb_strlen($name) > 20){
+        if ($name === '' or mb_strlen($name) > 20){
             return $this->json_response(array('error' => 'name is bad'), 400);
         }
-        if ($color !== '' && ! preg_match('/\A#[0-9a-fA-F]{6}\z/', $color)){
+        if ($color !== '' and ! preg_match('/\A#[0-9a-fA-F]{6}\z/', $color)){
             return $this->json_response(array('error' => 'color is bad'), 400);
         }
         if ( ! \Model\Tag::find_by_id($id)){
@@ -292,7 +292,7 @@ class Controller_Task extends Controller_Template{
     
     public function action_toggle(){
         $id = Input::post('id');
-        if (! ctype_digit($id)){
+        if ( ! ctype_digit($id)){
             return $this->json_response(array('error' => 'id is bad'), 400);
         }
         if (\Model\Task::toggle_done($id) === 0){
@@ -436,7 +436,7 @@ class Controller_Task extends Controller_Template{
             'tag_color' => '',
         );
         foreach ($tasks as $key => $row){
-            $tasks[$key]['soon'] = ($row['deadline'] !== NULL && $row['deadline'] <= $limit);
+            $tasks[$key]['soon'] = ($row['deadline'] !== null and $row['deadline'] <= $limit);
             $tasks[$key]['percent'] = $row['total_count'] ? round(($row['done_count']/$row['total_count'])*100) : 0;
             $tasks[$key]['deadline_value'] = $row['deadline'] === null ? '' : $row['deadline'];
             foreach ($defaults as $column => $default){

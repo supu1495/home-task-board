@@ -14,4 +14,4 @@ INSERT INTO sub_task (id, task_id, title, done) VALUES (3, 1, 'トイレット�
 INSERT INTO sub_task (id, task_id, title, done) VALUES (4, 2, '掃除機をかける', 1);
 INSERT INTO sub_task (id, task_id, title, done) VALUES (5, 2, '窓を拭く', 0);
 INSERT INTO sub_task (id, task_id, title, done) VALUES (6, 5, '捨てるものの分別', 1);
-INSERT INTO sub_task (id, task_id, title, done) VALUES (7, 5, '昨日のゴミが燃えないごみか問い合わせる', 1);
+INSERT INTO sub_task (id, task_id, title, done) VALUES (7, 5, '昨日のゴミが燃えないゴミか問い合わせる', 1);

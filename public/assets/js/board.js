@@ -27,7 +27,7 @@ function TaskBoard(tasks, tags){
     self.addNewSubtask = function(){ self.newSubtasks.push(ko.observable('')); };
     self.removeNewSubtask = function(item){ self.newSubtasks.remove(item); };
 
-     var compare = function(a, b, key){
+    var compare = function(a, b, key){
         if (key === 'undone_first'){
             var diff = a.done() - b.done();
             if (diff !== 0){ return diff; }

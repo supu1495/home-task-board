@@ -1,5 +1,5 @@
 <!doctype html>
- <html lang="ja">
+<html lang="ja">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,4 +22,4 @@
         <?php echo Asset::js('knockout-3.5.1.js'); ?>
         <?php echo Asset::js('board.js'); ?>
     </body>
- </html>
+</html>
