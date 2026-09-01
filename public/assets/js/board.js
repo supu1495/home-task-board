@@ -6,20 +6,47 @@ function TaskBoard(tasks, tags){
     self.tags = ko.observableArray(tags.map(function(tag){ return new Tag(tag); }));
     var savedTagId = tags.some(function(tag){ return tag.id === initialFilterTagId; }) ? initialFilterTagId : null;
     self.selectedTagId = ko.observable(savedTagId);
+    self.sortKey = ko.observable(initialSortKey);
     self.isTagModalOpen = ko.observable(false);
     self.newTagName = ko.observable('');
     self.newTagColor = ko.observable('#4f6bed');
 
-    self.selectTag = function(tag){ self.selectedTagId(tag.id); saveFilter(tag.id); };
-    self.selectAll = function(){ self.selectedTagId(null); saveFilter(null); };
+    self.selectTag = function(tag){ self.selectedTagId(tag.id); saveViewState(); };
+    self.selectAll = function(){ self.selectedTagId(null); saveViewState(); };
+    self.editingTaskId = editingTaskId;
+
+    self.openEdit = function(task, event){
+        if (event.target.closest('.check, form, a, button')){ return true; }
+        window.location.href = endpoints.edit + '/' + task.id;
+    };
+
+     var compare = function(a, b, key){
+        if (key === 'undone_first'){
+            var diff = a.done() - b.done();
+            if (diff !== 0){ return diff; }
+        }
+        var av = a.deadline_value;
+        var bv = b.deadline_value;
+        if (av === '' && bv === ''){ return 0; }
+        if (av === ''){ return 1; }
+        if (bv === ''){ return -1; }
+        if (av === bv){ return 0; }
+        var result = (av < bv) ? -1 : 1;
+        return key === 'deadline_desc' ? -result : result;
+    };
 
     self.filteredTasks = ko.computed(function(){
         var id = self.selectedTagId();
-        if (id === null){ return self.tasks(); }
-        return self.tasks().filter(function(task){ return task.tag_id === id; });
+        var key = self.sortKey();
+        var list = self.tasks();
+
+        if (id !== null){
+            list = list.filter(function(task){ return task.tag_id === id; });
+        }
+        return list.slice().sort(function(a, b){ return compare(a, b, key); });
     });
 
-     var post = function(url, params){
+    var post = function(url, params){
         params[csrfKey] = csrf;
         return fetch(url, {
             method: 'POST',
@@ -37,10 +64,14 @@ function TaskBoard(tasks, tags){
         });
     };
 
-    var saveFilter = function(tagId){
-        post(endpoints.filter, { tag_id: tagId === null ? '' : tagId })
-            .catch(function(e){ console.error(e); });
+    var saveViewState = function(){
+        post(endpoints.filter, {
+            tag_id: self.selectedTagId() === null ? '' : self.selectedTagId(),
+            sort: self.sortKey()
+        }).catch(function(e){ console.error(e); });
     };
+
+    self.sortKey.subscribe(saveViewState);
 
     var applyState = function(state){
         var task = null;

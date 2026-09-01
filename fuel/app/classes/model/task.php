@@ -7,6 +7,7 @@ class Task{
         $query->from('task');
         $query->join('tag', 'LEFT')->on('task.tag_id', '=', 'tag.id');
         $query->where('task.deleted_at', null);
+        $query->order_by(\DB::expr('task.deadline IS NULL'), 'asc');
         $query->order_by('task.deadline', 'asc');
         return $query->execute()->as_array();
     }

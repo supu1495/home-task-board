@@ -12,10 +12,13 @@ $csrf_token = Security::fetch_token();
     tagCreate: '<?php echo Uri::create('task/tag_create'); ?>',
     tagUpdate: '<?php echo Uri::create('task/tag_update'); ?>',
     tagDelete: '<?php echo Uri::create('task/tag_delete'); ?>',
-    filter: '<?php echo Uri::create('task/filter'); ?>'
+    filter: '<?php echo Uri::create('task/filter'); ?>',
+    edit: '<?php echo Uri::create('task/edit'); ?>'
   };
   var csrfKey = '<?php echo $csrf_key; ?>';
   var csrfToken = '<?php echo $csrf_token; ?>';
+  var editingTaskId = <?php echo $form['id'] === '' ? 'null' : (int) $form['id']; ?>;
+  var initialSortKey = '<?php echo $sort_key; ?>';
 </script>
 <div id="app">
     <div class="filters">
@@ -27,10 +30,15 @@ $csrf_token = Security::fetch_token();
         </span>
         <!-- /ko -->
         <span class="chip manage" data-bind="click: openTagModal">⚙ タグ管理</span>
-        <?php if ($flash): ?>
-            <div class="flash show">✓ <?php echo $flash; ?></div>
-        <?php endif; ?>
+        <select class="sortbox" data-bind="value: sortKey">
+            <option value="deadline_asc">締切が近い順</option>
+            <option value="deadline_desc">締切が遠い順</option>
+            <option value="undone_first">未完了を先に</option>
+        </select>
     </div>
+    <?php if ($flash): ?>
+        <div class="flash show">✓ <?php echo $flash; ?></div>
+    <?php endif; ?>
     <div class="grid">
     <div class="pane"><!-- 左の箱 -->
         <div class="pane-h"><!-- タスク一覧 -->
@@ -38,7 +46,7 @@ $csrf_token = Security::fetch_token();
         </div>
         <div class="board" id="board"><!-- カードを並べる箱 -->
             <div data-bind="foreach: filteredTasks">
-                <div class="task" data-bind="css: { done: done }, style: { borderLeftColor: tag_color }">
+                <div class="task" data-bind="click: $root.openEdit, css: { done: done, sel: id === $root.editingTaskId }, style: { borderLeftColor: tag_color }">
                     <div class="t-top">
                         <div class="check" data-bind="click: $root.toggleTask, text: done() ? '✓' : '', style: { background: done() ? tag_color : '', borderColor: done() ? tag_color : '' }"></div>
                         <div class="t-body">
@@ -46,7 +54,6 @@ $csrf_token = Security::fetch_token();
                                 <span class="t-title" data-bind="text: title"></span>
                                 <span class="tag" data-bind="text: tag_name, style: { background: tag_color }"></span>
                                 <span class="due" data-bind="text: '締切' + deadline, css: { soon: soon }"></span>
-                                <a class="reset" data-bind="attr: { href: '<?php echo Uri::create('task/edit'); ?>/' + id }">編集</a>
                                 <form action="<?php echo Uri::create('task/delete'); ?>" method="post">
                                     <input type="hidden" name="<?php echo $csrf_key; ?>" value="<?php echo $csrf_token; ?>">
                                     <input type="hidden" name="id" data-bind="attr: { value: id }">
