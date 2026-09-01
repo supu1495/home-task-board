@@ -1,6 +1,6 @@
 # 家庭内タスク掲示板
 
-家族でタスクを共有するための掲示板アプリ。HRクラウド株式会社 開発前課題として作成。
+家族でタスクを共有するための掲示板アプリ。
 
 家庭内のタスクを一つの掲示板に集約・可視化し、家族間での抜け漏れや二重作業を防ぐことを目的とする。締切やサブタスクの進捗をひと目で把握でき、完了チェックや絞り込みは画面遷移なしで反映される。
 
@@ -53,7 +53,8 @@ DBコンテナの初回起動時に `docker/db/init/` の以下2ファイルが�
 docker exec fuelphp-app php -r "echo password_hash('新しい合言葉', PASSWORD_DEFAULT), PHP_EOL;"
 ```
 
-出力された文字列を `fuel/app/config/lock.php` の `password_hash` に貼り付ける。平文はconfigにもDBにも保持していない。
+- 出力された文字列を `fuel/app/config/lock.php` の `password_hash` に貼り付ける。平文はconfigにもDBにも保持していない。
+- `fuel/app/config/crypt.php` は初回アクセス時に自動生成される。（リポジトリには含めない）
 
 ### 4. ブラウザからアクセス
 
@@ -88,9 +89,14 @@ http://localhost/
 - タグ管理モーダルからタグの追加・名前/色の変更・削除
 - タグを削除しても、そのタグが付いていたタスクは「タグなし」として残る（外部キーの `ON DELETE SET NULL`）
 
+### 並び替え
+- 締切が近い順／締切が遠い順／未完了を先に、の3種類を切り替えられる
+- 並び替えは Knockout.js がクライアント側で行い、画面遷移なしで反映される
+- 締切が未設定のタスクはどの並び順でも末尾に置く
+
 ### session / cookie
 - session … 登録・更新・削除の完了メッセージ（フラッシュ）、認証状態の保持
-- cookie … 絞り込みタグの保持（30日）。再訪時に選択状態を復元する
+- cookie … 絞り込みタグと並び順の保持（30日）。再訪時に選択状態を復元する。「すべて」「締切が近い順」の既定値に戻したときは cookie を削除する
 
 ### 簡易認証
 - 家族共通の合言葉によるロック
@@ -202,26 +208,6 @@ docker/
 
 ---
 
-## 課題条件との対応
-
-| # | 条件 | 実装箇所 |
-|---|---|---|
-| 1 | PHP / FuelPHP | 全体 |
-| 2 | beforeメソッド | `Controller_Task::before()`（認証チェック・CSRF検証）、`Controller_Lock::before()` |
-| 3 | configのカスタマイズ | `development/db.php`（DB接続）、`lock.php`（合言葉）、`config.php`（cookie有効期限・HttpOnly・出力エスケープ） |
-| 4 | session / cookie | session:フラッシュメッセージ・認証状態 / cookie:絞り込みタグの保持 |
-| 5 | ネームスペース | `Model\Task` / `Model\SubTask` / `Model\Tag` |
-| 6 | `\` によるグローバル名前空間アクセス | Model内の `\DB`、Controller内の `\Model\Task` |
-| 7 | DBクラス | 全SQLを `\DB::select()` 等のクエリビルダで記述。Controllerからは直接DBを呼ばない |
-| 8 | 1:n構造・正規化 | `tag - task`、`task - sub_task`。進捗は集計カラムを持たずCOUNTで算出 |
-| 9 | CRUD網羅 | task / sub_task / tag の3テーブルすべて |
-| 10 | Knockout.js | 一覧表示、完了チェック、絞り込み、タグ管理モーダル |
-| 11 | 非同期UI | 完了チェック、進捗の連動、絞り込み、タグCRUD |
-| 12 | GitHub管理 | 1 issue = 1ブランチ = 1PR で運用 |
-| 13 | セキュリティ | CSRF / 入力値検証 / XSS / SQLインジェクション / 合言葉ロック |
-
----
-
 ## 開発者向け情報
 
 ### ログ
@@ -263,5 +249,4 @@ docker exec -it fuelphp-app php /var/www/html/my_fuel_project/oil console
 
 ## 実装範囲外
 
-- 締切・完了状況によるタスクの並び替え（工数の都合により見送り）
 - ユーザーごとのログイン・アカウント管理（今回は家族共通の合言葉による簡易認証のみ）

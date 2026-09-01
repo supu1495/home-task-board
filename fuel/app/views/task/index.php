@@ -40,6 +40,9 @@ $csrf_token = Security::fetch_token();
     <?php if ($flash): ?>
         <div class="flash show">✓ <?php echo $flash; ?></div>
     <?php endif; ?>
+    <?php if ($flash_error): ?>
+        <div class="flash show error">× <?php echo $flash_error; ?></div>
+    <?php endif; ?>
     <div class="grid">
     <div class="pane"><!-- 左の箱 -->
         <div class="pane-h"><!-- タスク一覧 -->
@@ -132,8 +135,8 @@ $csrf_token = Security::fetch_token();
                     <label class="lbl">サブタスク</label>
                     <!-- ko foreach: newSubtasks -->
                     <div class="subinput">
-                        <input class="inp" type="text" name="subtasks[]" placeholder="例）牛乳" data-bind="value: $data">
-                        <span class="del" data-bind="click: $root.removeNewSubtask">🗑</span>
+                        <input class="inp" type="text" name="subtasks[]" placeholder="例）牛乳" data-bind="value: $rawData">
+                        <span class="del" data-bind="click: function(){ $root.removeNewSubtask($rawData); }">🗑</span>
                     </div>
                     <!-- /ko -->
                     <button type="button" class="addsub" data-bind="click: addNewSubtask">＋ サブタスクを追加</button>
