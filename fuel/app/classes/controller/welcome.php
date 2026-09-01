@@ -27,10 +27,6 @@ class Controller_Welcome extends Controller
 	 * @access  public
 	 * @return  Response
 	 */
-	public function action_index()
-	{
-		return Response::forge(View::forge('welcome/index'));
-	}
 
 	/**
 	 * A typical "Hello, Bob!" type example.  This uses a Presenter to
@@ -39,10 +35,6 @@ class Controller_Welcome extends Controller
 	 * @access  public
 	 * @return  Response
 	 */
-	public function action_hello()
-	{
-		return Response::forge(Presenter::forge('welcome/hello'));
-	}
 
 	/**
 	 * The 404 action for the application.

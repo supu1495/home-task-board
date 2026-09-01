@@ -36,6 +36,7 @@ class Controller_Task extends Controller_Template{
         $tags = $this->format_tags(\Model\Tag::find_all());
         $filter_tag_id = Cookie::get('filter_tag_id');
         $filter_tag_id = ctype_digit((string) $filter_tag_id) ? (int) $filter_tag_id : '';
+        $sort_key = $this->current_sort_key();
 
         $form = array(
             'id' => '',
@@ -52,8 +53,10 @@ class Controller_Task extends Controller_Template{
                 $form[$column] = $value;
             }
         }
+        $old_subtasks = (isset($old['subtasks']) and is_array($old['subtasks'])) ? array_values($old['subtasks']) : array();
 
-        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id, 'errors' => Session::get_flash('errors') ?: array()));
+        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id, 'errors' => Session::get_flash('errors') ?: array(), 'sort_key' => $sort_key));
+        $view->set_safe('old_subtasks_json', json_encode($old_subtasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->template->content = $view;
@@ -65,6 +68,7 @@ class Controller_Task extends Controller_Template{
         $task = \Model\Task::find_by_id($id);
         $filter_tag_id = Cookie::get('filter_tag_id');
         $filter_tag_id = ctype_digit((string) $filter_tag_id) ? (int) $filter_tag_id : '';
+        $sort_key = $this->current_sort_key();
 
         if ( ! $task){
             Response::redirect('task/index');
@@ -85,6 +89,7 @@ class Controller_Task extends Controller_Template{
                 $form[$column] = $value;
             }
         }
+        $old_subtasks = (isset($old['subtasks']) and is_array($old['subtasks'])) ? array_values($old['subtasks']) : array();
 
         foreach ($form as $column => $value){
             if ($form[$column] === null){
@@ -92,7 +97,8 @@ class Controller_Task extends Controller_Template{
             }
         }
         $form['subtasks'] = \Model\SubTask::find_by_task_ids(array($id));
-        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id, 'errors' => Session::get_flash('errors') ?: array()));
+        $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id, 'errors' => Session::get_flash('errors') ?: array(), 'sort_key' => $sort_key,));
+        $view->set_safe('old_subtasks_json', json_encode($old_subtasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->template->content = $view;
@@ -107,10 +113,26 @@ class Controller_Task extends Controller_Template{
             'memo'       => trim((string) Input::post('memo')),
         );
 
+        $posted = Input::post('subtasks', array());
+        $subtasks = array();
+        foreach (is_array($posted) ? $posted : array() as $title){
+            $title = trim((string) $title);
+            if ($title !== ''){
+                $subtasks[] = $title;
+            }
+        }
+
         $errors = $this->validate_task($values);
+        foreach ($subtasks as $title){
+            if (mb_strlen($title) > 50){
+                $errors[] = 'サブタスク名は50文字以内で入力してください';
+                break;
+            }
+        }
+
         if ($errors){
             Session::set_flash('errors', $errors);
-            Session::set_flash('old', $values);
+            Session::set_flash('old', $values + array('subtasks' => $subtasks));
             Response::redirect('task/index');
         }
 
@@ -119,7 +141,12 @@ class Controller_Task extends Controller_Template{
                 $values[$column] = null;
             }
         }
-        \Model\Task::create($values);
+
+        list($task_id, ) = \Model\Task::create($values);
+        foreach ($subtasks as $title){
+            \Model\SubTask::create(array('task_id' => $task_id, 'title' => $title));
+        }
+
         Session::set_flash('message', 'タスクを登録しました');
         Response::redirect('task/index');
     }
@@ -157,6 +184,9 @@ class Controller_Task extends Controller_Template{
 
     public function action_delete(){
         $id = Input::post('id');
+        if ( ! ctype_digit($id)){
+            Response::redirect('task/index');
+        }
         \Model\Task::delete($id);
         Session::set_flash('message', 'タスクを削除しました');
         Response::redirect('task/index');
@@ -164,16 +194,17 @@ class Controller_Task extends Controller_Template{
 
     public function action_subtask_create(){
         $task_id = Input::post('task_id');
-        $values = array(
-            'task_id' => $task_id,
-            'title' => Input::post('title'),
-        );
+        if ( ! ctype_digit($task_id)){
+            Response::redirect('task/index');
+        }
+
         $title = trim((string) Input::post('title'));
         if ($title === '' or mb_strlen($title) > 50){
             Session::set_flash('errors', array('サブタスク名は1〜50文字で入力してください'));
             Response::redirect('task/edit/'.$task_id);
         }
-        \Model\SubTask::create($values);
+
+        \Model\SubTask::create(array('task_id' => $task_id, 'title' => $title));
         Session::set_flash('message', 'サブタスクを追加しました');
         Response::redirect('task/edit/'.$task_id);
     }
@@ -197,6 +228,9 @@ class Controller_Task extends Controller_Template{
     public function action_subtask_delete(){
         $id = Input::post('id');
         $task_id = Input::post('task_id');
+        if ( ! ctype_digit($id) or ! ctype_digit($task_id)){
+            Response::redirect('task/index');
+        }
         \Model\SubTask::delete($id);
         Session::set_flash('message', 'サブタスクを削除しました');
         Response::redirect('task/edit/'.$task_id);
@@ -273,16 +307,37 @@ class Controller_Task extends Controller_Template{
 
     public function action_filter(){
         $tag_id = Input::post('tag_id');
+        $sort   = (string) Input::post('sort');
 
-        if ($tag_id === '' || $tag_id === null){
+        if ($tag_id === '' or $tag_id === null){
             Cookie::delete('filter_tag_id');
-            return $this->json_response(array('tag_id' => null));
-        }
-        if ( ! ctype_digit($tag_id)){
+            $tag_id = null;
+        } elseif ( ! ctype_digit($tag_id)){
             return $this->json_response(array('error' => 'tag_id is bad'), 400);
+        } else {
+            Cookie::set('filter_tag_id', $tag_id);
+            $tag_id = (int) $tag_id;
         }
-        Cookie::set('filter_tag_id', $tag_id);
-        return $this->json_response(array('tag_id' => (int) $tag_id));
+
+        if ($sort === '' or $sort === 'deadline_asc'){
+            Cookie::delete('sort_key');
+            $sort = 'deadline_asc';
+        } elseif ( ! in_array($sort, $this->sort_keys(), true)){
+            return $this->json_response(array('error' => 'sort is bad'), 400);
+        } else {
+            Cookie::set('sort_key', $sort);
+        }
+
+        return $this->json_response(array('tag_id' => $tag_id, 'sort' => $sort));
+    }
+
+    private function sort_keys(){
+        return array('deadline_asc', 'deadline_desc', 'undone_first');
+    }
+
+    private function current_sort_key(){
+        $sort = Cookie::get('sort_key');
+        return in_array($sort, $this->sort_keys(), true) ? $sort : 'deadline_asc';
     }
 
     private function validate_task($values){
@@ -383,6 +438,7 @@ class Controller_Task extends Controller_Template{
         foreach ($tasks as $key => $row){
             $tasks[$key]['soon'] = ($row['deadline'] !== NULL && $row['deadline'] <= $limit);
             $tasks[$key]['percent'] = $row['total_count'] ? round(($row['done_count']/$row['total_count'])*100) : 0;
+            $tasks[$key]['deadline_value'] = $row['deadline'] === null ? '' : $row['deadline'];
             foreach ($defaults as $column => $default){
                 if ($row[$column] === null){
                     $tasks[$key][$column] = $default;
