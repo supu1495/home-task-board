@@ -18,6 +18,7 @@ $csrf_token = Security::fetch_token();
   var csrfKey = '<?php echo $csrf_key; ?>';
   var csrfToken = '<?php echo $csrf_token; ?>';
   var editingTaskId = <?php echo $form['id'] === '' ? 'null' : (int) $form['id']; ?>;
+  var initialNewSubtasks = <?php echo $old_subtasks_json; ?>;
   var initialSortKey = '<?php echo $sort_key; ?>';
 </script>
 <div id="app">
@@ -126,6 +127,18 @@ $csrf_token = Security::fetch_token();
                 <label class="lbl">メモ</label>
                 <input class="inp" type="text" name="memo" placeholder="補足を入力..." value="<?php echo $form['memo']; ?>">
             </div>
+            <?php if ( ! $is_edit): ?>
+                <div class="field">
+                    <label class="lbl">サブタスク</label>
+                    <!-- ko foreach: newSubtasks -->
+                    <div class="subinput">
+                        <input class="inp" type="text" name="subtasks[]" placeholder="例）牛乳" data-bind="value: $data">
+                        <span class="del" data-bind="click: $root.removeNewSubtask">🗑</span>
+                    </div>
+                    <!-- /ko -->
+                    <button type="button" class="addsub" data-bind="click: addNewSubtask">＋ サブタスクを追加</button>
+                </div>
+            <?php endif; ?>
             <button class="submit" type="submit"><?php echo $is_edit ? '更新する' : '登録する'; ?></button>
         </form>
         <?php if ($is_edit): ?>

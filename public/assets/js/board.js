@@ -19,6 +19,12 @@ function TaskBoard(tasks, tags){
         if (event.target.closest('.check, form, a, button')){ return true; }
         window.location.href = endpoints.edit + '/' + task.id;
     };
+    self.newSubtasks = ko.observableArray(
+        initialNewSubtasks.map(function(title){ return ko.observable(title); })
+    );
+
+    self.addNewSubtask = function(){ self.newSubtasks.push(ko.observable('')); };
+    self.removeNewSubtask = function(item){ self.newSubtasks.remove(item); };
 
      var compare = function(a, b, key){
         if (key === 'undone_first'){

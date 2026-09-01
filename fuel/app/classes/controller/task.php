@@ -53,8 +53,10 @@ class Controller_Task extends Controller_Template{
                 $form[$column] = $value;
             }
         }
+        $old_subtasks = (isset($old['subtasks']) and is_array($old['subtasks'])) ? array_values($old['subtasks']) : array();
 
         $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id, 'errors' => Session::get_flash('errors') ?: array(), 'sort_key' => $sort_key));
+        $view->set_safe('old_subtasks_json', json_encode($old_subtasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->template->content = $view;
@@ -87,6 +89,7 @@ class Controller_Task extends Controller_Template{
                 $form[$column] = $value;
             }
         }
+        $old_subtasks = (isset($old['subtasks']) and is_array($old['subtasks'])) ? array_values($old['subtasks']) : array();
 
         foreach ($form as $column => $value){
             if ($form[$column] === null){
@@ -95,6 +98,7 @@ class Controller_Task extends Controller_Template{
         }
         $form['subtasks'] = \Model\SubTask::find_by_task_ids(array($id));
         $view = View::forge('task/index', array('tags' => $tags, 'form' => $form, 'flash' => Session::get_flash('message') ?: '', 'filter_tag_id' => $filter_tag_id, 'errors' => Session::get_flash('errors') ?: array(), 'sort_key' => $sort_key,));
+        $view->set_safe('old_subtasks_json', json_encode($old_subtasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tasks_json', json_encode($tasks, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $view->set_safe('tags_json', json_encode($tags, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT));
         $this->template->content = $view;
@@ -109,10 +113,26 @@ class Controller_Task extends Controller_Template{
             'memo'       => trim((string) Input::post('memo')),
         );
 
+        $posted = Input::post('subtasks', array());
+        $subtasks = array();
+        foreach (is_array($posted) ? $posted : array() as $title){
+            $title = trim((string) $title);
+            if ($title !== ''){
+                $subtasks[] = $title;
+            }
+        }
+
         $errors = $this->validate_task($values);
+        foreach ($subtasks as $title){
+            if (mb_strlen($title) > 50){
+                $errors[] = 'サブタスク名は50文字以内で入力してください';
+                break;
+            }
+        }
+
         if ($errors){
             Session::set_flash('errors', $errors);
-            Session::set_flash('old', $values);
+            Session::set_flash('old', $values + array('subtasks' => $subtasks));
             Response::redirect('task/index');
         }
 
@@ -121,7 +141,12 @@ class Controller_Task extends Controller_Template{
                 $values[$column] = null;
             }
         }
-        \Model\Task::create($values);
+
+        list($task_id, ) = \Model\Task::create($values);
+        foreach ($subtasks as $title){
+            \Model\SubTask::create(array('task_id' => $task_id, 'title' => $title));
+        }
+
         Session::set_flash('message', 'タスクを登録しました');
         Response::redirect('task/index');
     }
