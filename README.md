@@ -53,7 +53,8 @@ DBコンテナの初回起動時に `docker/db/init/` の以下2ファイルが�
 docker exec fuelphp-app php -r "echo password_hash('新しい合言葉', PASSWORD_DEFAULT), PHP_EOL;"
 ```
 
-出力された文字列を `fuel/app/config/lock.php` の `password_hash` に貼り付ける。平文はconfigにもDBにも保持していない。
+- 出力された文字列を `fuel/app/config/lock.php` の `password_hash` に貼り付ける。平文はconfigにもDBにも保持していない。
+- `fuel/app/config/crypt.php` は初回アクセス時に自動生成される。（リポジトリには含めない）
 
 ### 4. ブラウザからアクセス
 
